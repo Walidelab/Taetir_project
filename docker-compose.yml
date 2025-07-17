@@ -1,8 +1,7 @@
-version: "3.9"
-services: 
+services:
   db:
     container_name: my_postgres
-    image: postgres:16  # Or your preferred PostgreSQL version
+    image: postgres:16
     restart: always
     environment:
       POSTGRES_USER: myuser
@@ -13,5 +12,15 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  db_cache:
+    container_name: my_redis
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
 volumes:
   db_data:
+  redis_data:

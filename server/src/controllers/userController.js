@@ -1,18 +1,18 @@
-import {createUser , loginUser , getUserByEmail } from "../services/userService.js";
+import {createUser , loginUser , getUserByEmail , getUserById , updatePassword} from "../services/userService.js";
 import { sendOTPEmail } from "../services/nodemail.js";
-import { StoreOTP } from "../services/RedisOTP.js";
+import { StoreOTP , VerifyOTP } from "../services/RedisOTP.js";
 import jwt from "jsonwebtoken";
 
 
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { email, password , role } = req.body;
 
-        if (!name || !email || ! password){
+        if (!email || ! password || !role){
             return res.status(400).json({error : "All fields are required"});
         }
 
-        const newUser = await createUser({ name, email, password });
+        const newUser = await createUser({ email, password , role });
         return res.status(201).json({ message: "User created successfully", user: newUser });
     } catch (error) {
         console.error("Error creating user:", error);
@@ -44,6 +44,22 @@ export const LoginUser = async (req, res) => {
     }
 } 
 
+export const ChangePassword  = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+        if (!email || !newPassword) {
+            return res.status(400).json({ error: "Email and new password are required" });
+        }
+        await updatePassword(email, newPassword);
+        return res.status(200).json({ message: "Password updated successfully" });
+    }
+    catch ( error){
+        console.error("Error updating password:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+
 export const getProfile = async ( req , res ) => {
     try {
         const {email} = req.body ;
@@ -60,6 +76,28 @@ export const getProfile = async ( req , res ) => {
         console.error("Error fetching usesr");
         return res.status(500).json({error : " Internal server error"});
     }
+}
+
+export const getProfileById = async (req , res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+
+        const user = await getUserById(id);
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        return res.status(200).json({ message: "User fetched successfully", user });
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+
 }
 
 export const refreshToken = async (req, res) => {

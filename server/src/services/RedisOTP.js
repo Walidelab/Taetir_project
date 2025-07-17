@@ -10,7 +10,7 @@ await client.connect();
 export const StoreOTP = async (email, otp) => { 
     try {
         const hashedOtp = await bcrypt.hash(otp, 10);
-        await client.set(email, hashedOtp, 'EX', 600); // Store OTP with 10 minutes expiration
+        await client.set(email, hashedOtp, 'EX', 600); 
         return true;
     } catch (error) {
         console.error("Error storing OTP:", error);

@@ -8,14 +8,14 @@ import jwt from "jsonwebtoken";
 
 
 export const createUser = async (userData) => {
-    const { name , email , password } = userData;
+    const { email , password , role} = userData;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const query = ` INSERT INTO users (name, email, password)
+    const query = ` INSERT INTO users (email, password, role)
                    VALUES ($1, $2, $3)
-                   RETURNING id , name , email , created_at`;
+                   RETURNING id, email, created_at`;
 
-    const values = [name, email, hashedPassword];
+    const values = [email, hashedPassword, role];
 
     const result = await db.query(query , values);
     return result.rows[0];
@@ -27,6 +27,20 @@ export const getUserByEmail = async (email)=> {
 
     const result = await db.query(query , values);
     return result.rows[0];
+}
+
+export const getUserById = async (id) => {
+    const querty =`SELECT * FROM users WHERE id = $1`; 
+    const values = [id];
+    const result = await db.query(querty, values);
+    return result.rows[0];
+}
+
+export const updatePassword = async (email, newPassword) => {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const query = `UPDATE users SET password = $1 WHERE email = $2`;
+    const values = [hashedPassword, email];
+    await db.query(query, values);
 }
 
 export const generateToken = (user) => {
