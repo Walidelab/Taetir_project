@@ -1,12 +1,11 @@
-import express from "express";
-
-import { getProfile , getProfileById } from "../controllers/userController.js";
-import { protect } from "../middleware/protect.js";
+import express from 'express';
+import { createUserProfile , getUserProfile , updateUserProfile } from '../controllers/profileController.js';
 
 const router = express.Router();
 
-router.post("/me" ,getProfile );
-router.get("/user/:id", getProfileById);
-
+router.post('/create', createUserProfile);
+router.get('/:id', getUserProfile);
+router.put('/:id', updateUserProfile);
 
 export default router;
+

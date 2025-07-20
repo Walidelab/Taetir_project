@@ -76,3 +76,42 @@ export const loginUser = async ( email ,password) => {
 }
 
 
+export const chooseRole = async (userId, role) => {
+    const query = `UPDATE users SET role = $1 WHERE id = $2 RETURNING id, email, role`;
+    const values = [role, userId];
+
+    const result = await db.query(query, values);
+    if (result.rows.length === 0) {
+        throw new Error('User not found');
+    }
+    return result.rows[0];
+}
+
+export const CreateProfile = async (profileData) => {
+    const { user_id , first_name, last_name, bio, avatar_url , skills , interests , learning_objectives , experience_level  } = profileData;
+
+    const query = `INSERT INTO profiles (user_id, first_name, last_name, bio, avatar_url, skills, interests, learning_objectives, experience_level)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                   RETURNING id, user_id, first_name, last_name, bio, avatar_url, skills, interests, learning_objectives, experience_level`;
+    const values = [user_id, first_name, last_name, bio, avatar_url, skills, interests, learning_objectives, experience_level];
+    const result = await db.query(query, values);
+    return result.rows[0];
+}
+
+
+export const getProfileByUserId = async (userId) => {
+    const query = `SELECT * FROM profiles WHERE user_id = $1`;
+    const values = [userId];
+    const result = await db.query(query, values);
+    return result.rows[0];
+}
+
+export const UpdateProfile = async (userId, profileData) => {
+    const { first_name, last_name, bio, avatar_url, skills, interests, learning_objectives, experience_level } = profileData;
+
+    const query = `UPDATE profiles SET first_name = $1, last_name = $2, bio = $3, avatar_url = $4, skills = $5, interests = $6, learning_objectives = $7, experience_level = $8
+                   WHERE user_id = $9 RETURNING id, user_id, first_name, last_name, bio, avatar_url, skills, interests, learning_objectives, experience_level`;
+    const values = [first_name, last_name, bio, avatar_url, skills, interests, learning_objectives, experience_level, userId];
+    const result = await db.query(query, values);
+    return result.rows[0];
+}

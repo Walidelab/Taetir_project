@@ -1,4 +1,4 @@
-import {createUser , loginUser , getUserByEmail , getUserById , updatePassword} from "../services/userService.js";
+import {createUser , loginUser , getUserByEmail , getUserById , updatePassword , chooseRole} from "../services/userService.js";
 import { sendOTPEmail } from "../services/nodemail.js";
 import { StoreOTP , VerifyOTP } from "../services/RedisOTP.js";
 import jwt from "jsonwebtoken";
@@ -60,7 +60,7 @@ export const ChangePassword  = async (req, res) => {
 }
 
 
-export const getProfile = async ( req , res ) => {
+export const getUser = async ( req , res ) => {
     try {
         const {email} = req.body ;
 
@@ -78,7 +78,7 @@ export const getProfile = async ( req , res ) => {
     }
 }
 
-export const getProfileById = async (req , res) => {
+export const getUserbyId = async (req , res) => {
     try {
         const { id } = req.params;
 
@@ -167,5 +167,21 @@ export const verifyOTP = async (req, res) => {
     } catch (error) {
         console.error("Error verifying OTP:", error);
         return res.status(500).json({ error: "Failed to verify OTP" });
+    }
+}
+
+export const UpdateRole = async (req, res) => {
+    try {
+        const { userId, role } = req.body;
+
+        if (!userId || !role) {
+            return res.status(400).json({ error: "User ID and role are required" });
+        }
+
+        const updatedUser = await chooseRole(userId, role);
+        return res.status(200).json({ message: "Role updated successfully", user: updatedUser });
+    } catch (error) {
+        console.error("Error updating user role:", error);
+        return res.status(500).json({ error: "Internal server error" });
     }
 }
