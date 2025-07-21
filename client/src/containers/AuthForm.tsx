@@ -20,7 +20,7 @@ import {
 
 const FormSchema = z.object({
     email: z.string().email({
-        message: "Enter A valid email",
+        message: "Enter a valid email",
     }),
     password: z.string().min(8, {
         message: "Password must be at least 8 characters long"
@@ -111,9 +111,6 @@ export function AuthForm() {
                 </FormItem>
             )}
             />
-         <a href="/login" className="ml-2 text-xs font-medium">
-                    Already have an account? Sign in
-        </a>
 
         </div>
         <Button type="submit">Submit</Button>
