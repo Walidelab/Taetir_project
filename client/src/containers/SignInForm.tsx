@@ -2,9 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Alert } from '@/components/ui/alert';
-import { signup } from '@/services/authService';
-import { useAuth } from '@/hooks/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,7 +18,6 @@ import {
 } from "@/components/ui/form"
 
 
-
 const FormSchema = z.object({
     email: z.string().email({
         message: "Enter a valid email",
@@ -29,46 +25,22 @@ const FormSchema = z.object({
     password: z.string().min(8, {
         message: "Password must be at least 8 characters long"
     }),
-    confirmPassword: z.string().min(8, {
-        message: "Password must be at least 8 characters long"
-    }),
     rememberMe: z.boolean(),
-}).refine(
-    (data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword,
-    {
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-    }
-);
+});
 
-export function AuthForm() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+export function SignInForm() {
     const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email: "",
       password: "",
-      confirmPassword: "",
       rememberMe : false,
     },
   })
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
-    try{
-      const { email, password } = data;
-      const res = await signup(email, password);
-      login(res.token, res.user);
-      if (data.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
-      else {
-        localStorage.removeItem('rememberMe');
-      }
-      navigate("/profile-create")
-    }catch (error : any) {
-      console.error("Login failed:", error);
-      Error(error.response?.data?.message || "Login failed");
-    }
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    console.log(data);
+    // Handle form submission logic here, e.g., send data to an API
+    // You can also reset the form or show a success message
   }
   return (
     <Form {...form}>
@@ -100,19 +72,6 @@ export function AuthForm() {
             </FormItem>
           )}
         />
-         <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
-              <FormControl>
-                <Input placeholder="*******" type='password' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <div className='flex items-center justify-between m-4 '>
          <FormField
             control={form.control}
@@ -129,6 +88,10 @@ export function AuthForm() {
                 </FormItem>
             )}
             />
+
+        <a href="/forgot-password" className="text-sm text-blue-500 hover:underline">
+          Forgot password?
+        </a>
 
         </div>
         <Button type="submit">Submit</Button>

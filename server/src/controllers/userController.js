@@ -6,13 +6,13 @@ import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
     try {
-        const { email, password , role } = req.body;
+        const { email, password , role} = req.body;
 
-        if (!email || ! password || !role){
+        if (!email || ! password ){
             return res.status(400).json({error : "All fields are required"});
         }
 
-        const newUser = await createUser({ email, password , role });
+        const newUser = await createUser({ email, password , role});
         return res.status(201).json({ message: "User created successfully", user: newUser });
     } catch (error) {
         console.error("Error creating user:", error);

@@ -1,4 +1,4 @@
-import { AuthForm } from '@/containers/AuthForm'
+import {SignInForm as AuthForm} from '@/containers/SignInForm'
 import { Link } from 'react-router-dom'
 import {
   Card,
@@ -10,7 +10,7 @@ import {
 
 import { Button } from '@/components/ui/button'
 
-const SignupPage = () => {
+const SigninPage = () => {
   return (
     <div className="min-h-screen w-xl flex items-center justify-center bg-gray-50">
       <Card className='w-full mx-auto'>
@@ -18,8 +18,8 @@ const SignupPage = () => {
           <h1 className="bg-linear from-blue-900 to-blue-700 bg-clip-text text-3xl font-extrabold text-transparent text-center">
               TAETIR
           </h1>
-          <CardTitle className="text-center">Sign Up</CardTitle>
-          <p className="text-center text-xs">Create an account to get started</p>
+          <CardTitle className="text-center">Welcome Back</CardTitle>
+            <p className="text-center text-xs">Please sign in to continue</p>
         </CardHeader>
         <CardContent>
           <div className='mx-auto'>
@@ -31,7 +31,7 @@ const SignupPage = () => {
             <div className="flex-grow h-px bg-gray-300" />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col justify-center">
+        <CardFooter className="flex justify-center flex-col items-center gap-3">
           <Button variant='outline'>
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -41,17 +41,22 @@ const SignupPage = () => {
             </svg>
             Continue avec Google
           </Button>
-
+          <div className="flex-grow h-px bg-gray-300" />
+       
           <p className="text-sm text-gray-500">
-            Already have an account? 
-            <Link to="/signin" className="text-blue-500 hover:underline">
-            Sign in
+            Don't have an account? 
+            <Link to="/signup" className="text-blue-500 hover:underline">
+            Sign up
             </Link>
           </p>
+
+          
+
+
         </CardFooter>
       </Card>
     </div>
   ) 
 }
 
-export default SignupPage
+export default SigninPage
