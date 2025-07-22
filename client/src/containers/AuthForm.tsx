@@ -5,11 +5,13 @@ import { Alert } from '@/components/ui/alert';
 import { signup } from '@/services/authService';
 import { useAuth } from '@/hooks/AuthContext';
 import { useNavigate } from 'react-router-dom';
-
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';  
+import { Label } from '@/components/ui/label'; 
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { IconChalkboardTeacher , IconSchool} from "@tabler/icons-react"
 
 import {
   Form,
@@ -42,8 +44,9 @@ const FormSchema = z.object({
 );
 
 export function AuthForm() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    const [role, setRole] = useState('');
     const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -55,9 +58,9 @@ export function AuthForm() {
   })
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try{
-      const { email, password } = data;
-      const res = await signup(email, password);
-      login(res.token, res.user);
+      const { email, password  } = data;
+      const res = await signup(email, password , role);
+      login(res.user, res.token);
       if (data.rememberMe) {
         localStorage.setItem('rememberMe', 'true');
       }
@@ -113,12 +116,25 @@ export function AuthForm() {
             </FormItem>
           )}
         />
-        <div className='flex items-center justify-between m-4 '>
-         <FormField
+        <div className='flex items-center justify-between  '>
+         
+
+        </div>
+          <div className='flex gap-4 justify-center'>
+            <Button variant="outline" className={`w-42 h-32 flex justify-center flex-col hover:bg-gray-50 ${role === 'mentor' ? 'bg-blue-800 text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentor')}>
+                  <IconChalkboardTeacher className="mr-2" size={24} />
+                  Mentor
+              </Button>
+              <Button variant="outline" className={`w-42 h-32 flex justify-center flex-col hover:bg-gray-50 ${role === 'mentee' ? 'bg-blue-800 text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentee')}>
+                  <IconSchool className="mr-2" size={24} />
+                  Mentee
+              </Button>
+          </div>
+          <FormField
             control={form.control}
             name="rememberMe"
             render={({ field }) => (
-                <FormItem className="flex items-center justify-between">
+                <FormItem className="flex items-center justify-between mt-4">
                 <Label className="flex items-center gap-2">
                     <Checkbox
                     checked={field.value}
@@ -129,8 +145,6 @@ export function AuthForm() {
                 </FormItem>
             )}
             />
-
-        </div>
         <Button type="submit">Submit</Button>
         </div>
       </form>

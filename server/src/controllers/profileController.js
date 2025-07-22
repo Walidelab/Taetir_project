@@ -15,7 +15,7 @@ export const createUserProfile = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     try {
-        const userId = req.params.id; 
+        const userId = req.params.id; // Assuming user ID is stored in req.locals by the protect middleware
         const profile = await getProfileByUserId(userId);
         if (!profile) {
             return res.status(404).json({ error: "Profile not found" });
@@ -27,9 +27,23 @@ export const getUserProfile = async (req, res) => {
     }
 }
 
+export const getMyProfile = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const profile = await getProfileByUserId(userId);
+        if (!profile) {
+            return res.status(404).json({ error: "Profile not found" });
+        }
+        return res.status(200).json(profile);
+    } catch (error) {
+        console.error("Error fetching my profile:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+}
+
 export const updateUserProfile = async (req, res) => {
     try {
-        const userId = req.params.id; 
+        const userId = req.user.id; 
         const updatedProfile = await UpdateProfile(userId, req.body);
         return res.status(200).json({ message: "Profile updated successfully", profile: updatedProfile });
     } catch (error) {

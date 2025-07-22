@@ -2,40 +2,45 @@ import React, { useState } from 'react';
 import type { DragEvent, KeyboardEvent } from 'react';
 import { ChevronDown, Mail, X, Plus, GripVertical } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/AuthContext';
+import { createProfile } from '@/services/authService';
 
 interface FormData {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   bio: string;
-  skills: string;
-  experienceLevel: string;
+  skills: string[];
+  experience_level: string;
   interests: string[];
 }
 
 interface TaetirProfileFormProps {
   initialData?: Partial<FormData>;
-  onSubmit?: (data: FormData) => void;
 }
 
 type FormField = keyof Omit<FormData, 'interests'>;
 
 const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({ 
   initialData, 
-  onSubmit 
 }) => {
-  const [formData, setFormData] = useState<FormData>({
-    firstName: initialData?.firstName || '',
-    lastName: initialData?.lastName || '',
+ const [formData, setFormData] = useState<FormData>({
+    first_name: initialData?.first_name || '',
+    last_name: initialData?.last_name || '',
     bio: initialData?.bio || '',
-    skills: initialData?.skills || '',
-    experienceLevel: initialData?.experienceLevel || '',
-    interests: initialData?.interests || ['Technology']
+    skills: initialData?.skills || ['Programming', 'Design'],
+    experience_level: initialData?.experience_level || '',
+    interests: initialData?.interests || ['Technology', 'Design']
   });
 
-  const [newInterest, setNewInterest] = useState<string>('');
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const { user } = useAuth();
 
-  const handleInputChange = (field: FormField, value: string): void => {
+  const [newInterest, setNewInterest] = useState<string>('');
+  const [newSkill, setNewSkill] = useState<string>('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [draggedSkillIndex, setDraggedSkillIndex] = useState<number | null>(null);
+
+  
+const handleInputChange = (field: FormField, value: string): void => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -53,6 +58,17 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
     }
   };
 
+  const addSkill = (): void => {
+    const trimmedSkill = newSkill.trim();
+    if (trimmedSkill && !formData.skills.includes(trimmedSkill)) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, trimmedSkill]
+      }));
+      setNewSkill('');
+    }
+  };
+
   const removeInterest = (indexToRemove: number): void => {
     setFormData(prev => ({
       ...prev,
@@ -60,8 +76,20 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
     }));
   };
 
+  const removeSkill = (indexToRemove: number): void => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
   const handleDragStart = (e: DragEvent<HTMLDivElement>, index: number): void => {
     setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleSkillDragStart = (e: DragEvent<HTMLDivElement>, index: number): void => {
+    setDraggedSkillIndex(index);
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -88,6 +116,24 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
     setDraggedIndex(null);
   };
 
+  const handleSkillDrop = (e: DragEvent<HTMLDivElement>, dropIndex: number): void => {
+    e.preventDefault();
+    if (draggedSkillIndex === null) return;
+
+    const newSkills = [...formData.skills];
+    const draggedItem = newSkills[draggedSkillIndex];
+    
+    newSkills.splice(draggedSkillIndex, 1);
+    newSkills.splice(dropIndex, 0, draggedItem);
+    
+    setFormData(prev => ({
+      ...prev,
+      skills: newSkills
+    }));
+    
+    setDraggedSkillIndex(null);
+  };
+
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -95,10 +141,20 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
     }
   };
 
-  const handleSubmit = (): void => {
-    if (onSubmit) {
-      onSubmit(formData);
+  const handleSkillKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSkill();
     }
+  };
+
+  const onSubmit = (data: FormData) => {
+    const filedata = { user_id: user?.id, ...data }
+    createProfile(filedata).then(() => console.log("create profile successful"))
+  }
+
+  const handleSubmit = (): void => {
+    onSubmit(formData)
   };
 
   const addSuggestion = (suggestion: string): void => {
@@ -109,14 +165,29 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
     setNewInterest('');
   };
 
+  const addSkillSuggestion = (suggestion: string): void => {
+    setFormData(prev => ({
+      ...prev,
+      skills: [...prev.skills, suggestion]
+    }));
+    setNewSkill('');
+  };
+
   const experienceLevels: string[] = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
-  const skillOptions: string[] = ['Programming', 'Design', 'Marketing', 'Writing', 'Business', 'Data Science','Machine Learning'];
-  const interestOptions: string[] = ['Technology', 'Art', 'Science', 'Business', 'Education', 'Health',  'Music', 'Travel', 'Photography', 'Cooking', 'Reading' ];
+  const skillOptions: string[] = ['Programming', 'Design', 'Marketing', 'Writing', 'Business', 'Data Science'];
+  const interestOptions: string[] = ['Technology', 'Art', 'Science', 'Business', 'Education', 'Health', 'Sports', 'Music', 'Travel', 'Photography', 'Cooking', 'Reading'];
 
   const filteredSuggestions = interestOptions
     .filter(option => 
       option.toLowerCase().includes(newInterest.toLowerCase()) &&
       !formData.interests.includes(option)
+    )
+    .slice(0, 4);
+
+  const filteredSkillSuggestions = skillOptions
+    .filter(option => 
+      option.toLowerCase().includes(newSkill.toLowerCase()) &&
+      !formData.skills.includes(option)
     )
     .slice(0, 4);
 
@@ -143,12 +214,12 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {formData.firstName || formData.lastName 
-                    ? `${formData.firstName} ${formData.lastName}`.trim() 
+                  {formData.first_name || formData.last_name
+                    ? `${formData.first_name} ${formData.last_name}`.trim()
                     : 'Your Name'
                   }
                 </h2>
-                <p className="text-gray-600">example@gmail.com</p>
+                <p className="text-gray-600">{user?.email}</p>
               </div>
             </div>
             <button 
@@ -169,8 +240,8 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
               <input
                 type="text"
                 placeholder="Your First Name"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
+                value={formData.first_name}
+                onChange={(e) => handleInputChange('first_name', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               />
             </div>
@@ -183,8 +254,8 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
               <input
                 type="text"
                 placeholder="Your Last Name"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
+                value={formData.last_name}
+                onChange={(e) => handleInputChange('last_name', e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               />
             </div>
@@ -205,21 +276,81 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
 
             {/* Skills */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Skills
-              </Label>
-              <div className="relative">
-                <select
-                  value={formData.skills}
-                  onChange={(e) => handleInputChange('skills', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors appearance-none bg-white"
-                >
-                  <option value="">Select your skills</option>
-                  {skillOptions.map(skill => (
-                    <option key={skill} value={skill}>{skill}</option>
+              </label>
+              
+              {/* Skills Tags Container */}
+              <div className="min-h-[120px] p-4 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white">
+                {/* Existing Skills Tags */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {formData.skills.map((skill, index) => (
+                    <div
+                      key={`${skill}-${index}`}
+                      draggable
+                      onDragStart={(e) => handleSkillDragStart(e, index)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleSkillDrop(e, index)}
+                      className={`group flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium cursor-move hover:bg-green-200 transition-colors ${
+                        draggedSkillIndex === index ? 'opacity-50' : ''
+                      }`}
+                    >
+                      <GripVertical className="w-3 h-3 text-green-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span>{skill}</span>
+                      <button
+                        onClick={() => removeSkill(index)}
+                        className="w-4 h-4 rounded-full bg-green-200 hover:bg-red-200 flex items-center justify-center transition-colors group"
+                        type="button"
+                        aria-label={`Remove ${skill} skill`}
+                      >
+                        <X className="w-3 h-3 text-green-600 group-hover:text-red-600" />
+                      </button>
+                    </div>
                   ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                </div>
+
+                {/* Add New Skill */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 rounded-full hover:border-green-400 transition-colors">
+                    <Plus className="w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Add new skill..."
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      onKeyPress={handleSkillKeyPress}
+                      className="flex-1 outline-none text-sm placeholder-gray-400 bg-transparent"
+                    />
+                  </div>
+                  {newSkill && (
+                    <button
+                      onClick={addSkill}
+                      className="px-3 py-2 bg-green-600 text-white text-sm rounded-full hover:bg-green-700 transition-colors"
+                      type="button"
+                    >
+                      Add
+                    </button>
+                  )}
+                </div>
+
+                {/* Suggested Skills */}
+                {newSkill && filteredSkillSuggestions.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="text-xs text-gray-500 mb-2">Suggestions:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {filteredSkillSuggestions.map(suggestion => (
+                        <button
+                          key={suggestion}
+                          onClick={() => addSkillSuggestion(suggestion)}
+                          className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+                          type="button"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -230,8 +361,8 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
               </Label>
               <div className="relative">
                 <select
-                  value={formData.experienceLevel}
-                  onChange={(e) => handleInputChange('experienceLevel', e.target.value)}
+                  value={formData.experience_level}
+                  onChange={(e) => handleInputChange('experience_level', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors appearance-none bg-white"
                 >
                   <option value="">Select experience level</option>

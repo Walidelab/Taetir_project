@@ -1,7 +1,8 @@
-import {createUser , loginUser , getUserByEmail , getUserById , updatePassword , chooseRole} from "../services/userService.js";
+import {createUser  , getUserByEmail , getUserById , updatePassword , chooseRole} from "../services/userService.js";
 import { sendOTPEmail } from "../services/nodemail.js";
 import { StoreOTP , VerifyOTP } from "../services/RedisOTP.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 
 export const registerUser = async (req, res) => {
@@ -13,13 +14,26 @@ export const registerUser = async (req, res) => {
         }
 
         const newUser = await createUser({ email, password , role});
-        return res.status(201).json({ message: "User created successfully", user: newUser });
+
+        const token = generateToken(newUser.user);
+        
+        return res.status(201).json({ message: "User created successfully", user: newUser.user , token });
     } catch (error) {
         console.error("Error creating user:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 
 };
+
+export const generateToken = (user) => {
+    const payload = {
+        id: user.id,
+        email: user.email,
+    };
+
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+}
+
 
 export const LoginUser = async (req, res) => {
     try {
@@ -29,15 +43,28 @@ export const LoginUser = async (req, res) => {
             return res.status(400).json({ error: "Email and password are required" });
         }
 
-        const result = await loginUser(email, password);
+        const user = await getUserByEmail(email);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-        res.cookie('token', result.token, {
-            httpOnly: true,
-            maxAge: 3600000 
-        });
+    bcrypt.compare(password , user.password , ( err , res) => {
+        if (err){
+            return res.status(500).json({ error: 'Error comparing passwords' });
+        }
+        if (!res) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+    }  )
 
-        return res.status(201).json({ message : "Login successful " , user : result.user , token: result.token });
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+        const token = generateToken(user);
 
+
+        return res.status(200).json({ message: "Login successful", user, token });
     } catch (error) {
         console.error("Error logging in user:", error);
         return res.status(500).json({ error: "Internal server error" });
@@ -62,18 +89,17 @@ export const ChangePassword  = async (req, res) => {
 
 export const getUser = async ( req , res ) => {
     try {
-        const {email} = req.body ;
-
-        if ( !email ) {
+        const { id } = req.user.id ;
+        if ( !id ) {
             return res.status(400).json({error : "Error Fetching User"})
         }
 
-        const result = await getUserByEmail(email);
+        const result = await getUserById(id);
 
         return res.status(201).json({message: "Fetching user successfuly ", user: result});
     }
     catch (error){
-        console.error("Error fetching usesr");
+        console.error("Error fetching user:", error);
         return res.status(500).json({error : " Internal server error"});
     }
 }

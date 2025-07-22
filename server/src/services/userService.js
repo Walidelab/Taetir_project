@@ -17,8 +17,9 @@ export const createUser = async (userData) => {
 
     const values = [email, hashedPassword, role];
 
-    const result = await db.query(query , values);
-    return result.rows[0];
+    const user = await db.query(query , values);
+
+    return { user: user.rows[0] };
 }
 
 export const getUserByEmail = async (email)=> {
@@ -43,37 +44,8 @@ export const updatePassword = async (email, newPassword) => {
     await db.query(query, values);
 }
 
-export const generateToken = (user) => {
-    const payload = {
-        id: user.id,
-        email: user.email,
-    };
 
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-}
 
-export const loginUser = async ( email ,password) => {
-
-    const user = await getUserByEmail(email);
-
-    if ( !user) return new error('User not found ') ;
-
-    bcrypt.compare(password , user.password , ( err , res) => {
-        if (err){
-            new error('Error comparing passwords');
-        }
-        if (!res) {
-            throw new error('Invalid password');
-        }
-    }  )
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-        throw new Error('Invalid password');
-    }
-    const token = generateToken(user);
-    return { user, token };
-}
 
 
 export const chooseRole = async (userId, role) => {

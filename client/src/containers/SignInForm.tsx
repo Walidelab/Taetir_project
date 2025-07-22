@@ -2,12 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Alert } from '@/components/ui/alert';
-
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';  
-
+import { Label } from '@/components/ui/label'; 
+import { loginUser } from '@/services/authService';
+import { useAuth } from '@/hooks/AuthContext';
+import { useNavigate } from 'react-router-dom'; 
+import { setToken, removeToken } from '@/utils/auth';
 import {
   Form,
   FormControl,
@@ -29,6 +31,8 @@ const FormSchema = z.object({
 });
 
 export function SignInForm() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
     const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -37,10 +41,12 @@ export function SignInForm() {
       rememberMe : false,
     },
   })
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data);
-    // Handle form submission logic here, e.g., send data to an API
-    // You can also reset the form or show a success message
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    const { email, password } = data;
+          const res = await loginUser(email, password);
+          login(res.user, res.token);
+          navigate("/profile-create" );
+
   }
   return (
     <Form {...form}>
