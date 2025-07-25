@@ -1,4 +1,5 @@
-import {createUser  , getUserByEmail , getUserById , updatePassword , chooseRole} from "../services/userService.js";
+import {createUser  , getUserByEmail , getUserById , updatePassword , chooseRole , CreateProfile , UpdateProfile} from "../services/userService.js";
+import { createMentor } from "../services/mentorService.js";
 import { sendOTPEmail } from "../services/nodemail.js";
 import { StoreOTP , VerifyOTP } from "../services/RedisOTP.js";
 import jwt from "jsonwebtoken";
@@ -7,13 +8,14 @@ import bcrypt from "bcrypt";
 
 export const registerUser = async (req, res) => {
     try {
-        const { email, password , role} = req.body;
+        const { email, password } = req.body;
 
         if (!email || ! password ){
             return res.status(400).json({error : "All fields are required"});
         }
 
-        const newUser = await createUser({ email, password , role});
+        const newUser = await createUser({ email, password });
+        const newprofile = await CreateProfile(newUser.user.id);
 
         const token = generateToken(newUser.user);
         
@@ -37,7 +39,7 @@ export const generateToken = (user) => {
 
 export const LoginUser = async (req, res) => {
     try {
-        const { email , password } = req.body;
+        const { email, password } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({ error: "Email and password are required" });
@@ -48,21 +50,12 @@ export const LoginUser = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-    bcrypt.compare(password , user.password , ( err , res) => {
-        if (err){
-            return res.status(500).json({ error: 'Error comparing passwords' });
-        }
-        if (!res) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.status(401).json({ error: 'Invalid password' });
         }
-    }  )
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(401).json({ error: 'Invalid password' });
-        }
         const token = generateToken(user);
-
 
         return res.status(200).json({ message: "Login successful", user, token });
     } catch (error) {
@@ -127,26 +120,22 @@ export const getUserbyId = async (req , res) => {
 }
 
 export const refreshToken = async (req, res) => {
-    const token = req.cookies.token;
+    // Get token from Authorization header: "Bearer <token>"
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({ error: "No token provided" });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: "Invalid token" });
-        }
-
+    try {
+        const user = jwt.verify(token, process.env.JWT_SECRET);
         const newToken = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.cookie('token', newToken, {
-            httpOnly: true,
-            maxAge: 3600000 
-        });
-
         return res.status(200).json({ message: "Token refreshed successfully", token: newToken });
-    });
+    } catch (err) {
+        return res.status(403).json({ error: "Invalid token" });
+    }
 }
 
 function generateOTP() {
@@ -188,8 +177,8 @@ export const verifyOTP = async (req, res) => {
         if (!isVerified) {
             return res.status(400).json({ error: "Invalid or expired OTP" });
         }
-
-        return res.status(200).json({ message: "OTP verified successfully" });
+        const token = generateToken(email);
+        return res.status(200).json({ message: "OTP verified successfully", token });
     } catch (error) {
         console.error("Error verifying OTP:", error);
         return res.status(500).json({ error: "Failed to verify OTP" });
@@ -205,6 +194,11 @@ export const UpdateRole = async (req, res) => {
         }
 
         const updatedUser = await chooseRole(userId, role);
+        if (!updatedUser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const profile = await UpdateProfile(userId, { role });
+        
         return res.status(200).json({ message: "Role updated successfully", user: updatedUser });
     } catch (error) {
         console.error("Error updating user role:", error);
