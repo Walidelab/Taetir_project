@@ -3,7 +3,8 @@ import type { DragEvent, KeyboardEvent } from 'react';
 import { ChevronDown, Mail, X, Plus, GripVertical } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/AuthContext';
-import { createProfile } from '@/services/authService';
+import { updateProfile } from '@/services/authService';
+import { useNavigate } from 'react-router-dom';
 
 interface FormData {
   first_name: string;
@@ -32,7 +33,15 @@ const TaetirProfileForm: React.FC<TaetirProfileFormProps> = ({
     interests: initialData?.interests || ['Technology', 'Design']
   });
 
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user , profile } = useAuth();
+  if (!user) {
+    navigate('/signin');
+    return null;
+  }
+  if ( profile ){
+    navigate('/dashboard');
+  }
 
   const [newInterest, setNewInterest] = useState<string>('');
   const [newSkill, setNewSkill] = useState<string>('');
@@ -137,6 +146,7 @@ const handleInputChange = (field: FormField, value: string): void => {
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      console.log(profile);
       addInterest();
     }
   };
@@ -150,7 +160,7 @@ const handleInputChange = (field: FormField, value: string): void => {
 
   const onSubmit = (data: FormData) => {
     const filedata = { user_id: user?.id, ...data }
-    createProfile(filedata).then(() => console.log("create profile successful"))
+    updateProfile(filedata).then(() => console.log("update profile successful"))
   }
 
   const handleSubmit = (): void => {

@@ -3,15 +3,31 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { IconChalkboardTeacher , IconSchool} from "@tabler/icons-react"
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { useNavigate , useLocation} from 'react-router-dom';
+import { useAuth } from '@/hooks/AuthContext';
+import { chooseRole } from '@/services/authService';
 
 const ChooseRole = () => {
 
     const [role, setRole] = useState('');
+    const navigate = useNavigate();
+    const location = useLocation();
 
+    const { user } = useAuth();
     const submitRole = () => {
+        if (!user?.id) {
+            console.error('User ID is missing.');
+            return;
+        }
         if (role) {
-            console.log(`Selected role: ${role}`);
-            // Here you can handle the role selection, e.g., redirect to another page or update the state
+            chooseRole(user.id, role)
+                .then(() => {
+                    // Redirect to dashboard
+                    navigate('/dashboard');
+                })
+                .catch(error => {
+                    console.error('Error setting role:', error);
+                });
         } else {
             console.error('Please select a role before proceeding.');
         }

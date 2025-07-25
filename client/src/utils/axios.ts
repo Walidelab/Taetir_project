@@ -41,7 +41,6 @@ api.interceptors.response.use(
         return api(error.config)
       } catch (err) {
         removeToken()
-        window.location.href = "/create-profile"
       }
     }
     return Promise.reject(error)

@@ -18,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { useEffect } from 'react';
 
 
 const FormSchema = z.object({
@@ -31,23 +32,29 @@ const FormSchema = z.object({
 });
 
 export function SignInForm() {
-  const { login } = useAuth();
+  const { login, profile } = useAuth();
   const navigate = useNavigate();
-    const form = useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email: "",
       password: "",
-      rememberMe : false,
+      rememberMe: false,
     },
-  })
+  });
+
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     const { email, password } = data;
-          const res = await loginUser(email, password);
-          login(res.user, res.token);
-          navigate("/profile-create" );
+    const res = await loginUser(email, password);
+    if (!res) return;
+    await login(res.user, res.token);
+
+    navigate('/dashboard');
 
   }
+
+
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} >

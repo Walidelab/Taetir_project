@@ -6,7 +6,7 @@ import api from "../utils/axios"
 export interface User {
   id: string
   email: string
-  name?: string
+  role?: string
 }
 
 export interface Profile {
@@ -41,27 +41,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // On app load, try to refresh token
   useEffect(() => {
     async function initAuth() {
+      const storedToken = localStorage.getItem("token");
+      if (!storedToken) {
+        setLoading(false);
+        return;
+      }
       try {
-        const { data } = await api.post<{ accessToken: string; user: User }>(
+        const { data } = await api.post<{ token: string; user: User }>(
           "/auth/refresh",
           {},
-          { withCredentials: true }
-        )
-        setAuthToken(data.accessToken)
-        setToken(data.accessToken) // optional (if you want to persist in memory/localStorage)
-        setUser(data.user)
+          { headers: { Authorization: `Bearer ${storedToken}` } }
+        );
+        setAuthToken(data.token);
+        setToken(data.token);
+        setUser(data.user);
 
         // Fetch user profile
-        await fetchProfile(data.accessToken)
+        await fetchProfile(data.token);
       } catch (err) {
-        console.log("No valid session found:", err)
-        logout()
+        console.log("No valid session found:", err);
+        logout();
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    initAuth()
+    initAuth();
   }, [])
 
   async function fetchProfile(authToken?: string) {
@@ -77,11 +82,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   // Login: call backend and set token in memory
- function login(user: User, token: string) {
+ async function login(user: User, token: string) {
     setAuthToken(token)
     setToken(token)
     setUser(user)
-    fetchProfile(token);
+    await fetchProfile(token);
   }
 
   // Logout: clear state and remove cookies

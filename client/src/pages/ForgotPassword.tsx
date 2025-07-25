@@ -3,17 +3,29 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { forgotPassword } from '@/services/authService';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 
 
 const ForgotPassword = () => {
     const [ email , setEmail ] = useState('');
+    const navigate = useNavigate();
 
     const handleResetPassword = () => { 
         if ( email !== '' ) {
-            console.log(`Password reset link sent to ${email}`);
+            forgotPassword(email)
+                .then((response) => {
+                    alert("Password reset link sent to your email.");
+                    navigate('/otp', { state: { email } }); 
+                })
+                .catch((error) => {
+                    console.error("Error sending password reset link:", error);
+                    alert("Failed to send password reset link. Please try again.");
+                });
+            
         }
     }
   return (

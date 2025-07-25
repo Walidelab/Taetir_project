@@ -46,7 +46,6 @@ const FormSchema = z.object({
 export function AuthForm() {
     const { login } = useAuth();
     const navigate = useNavigate();
-    const [role, setRole] = useState('');
     const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -59,7 +58,7 @@ export function AuthForm() {
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try{
       const { email, password  } = data;
-      const res = await signup(email, password , role);
+      const res = await signup(email, password);
       login(res.user, res.token);
       if (data.rememberMe) {
         localStorage.setItem('rememberMe', 'true');
@@ -67,7 +66,7 @@ export function AuthForm() {
       else {
         localStorage.removeItem('rememberMe');
       }
-      navigate("/profile-create")
+      navigate("/choose-role" , { state : { userId : res.user.id } });
     }catch (error : any) {
       console.error("Login failed:", error);
       Error(error.response?.data?.message || "Login failed");
@@ -120,16 +119,6 @@ export function AuthForm() {
          
 
         </div>
-          <div className='flex gap-4 justify-center'>
-            <Button variant="outline" className={`w-42 h-32 flex justify-center flex-col hover:bg-gray-50 ${role === 'mentor' ? 'bg-blue-800 text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentor')}>
-                  <IconChalkboardTeacher className="mr-2" size={24} />
-                  Mentor
-              </Button>
-              <Button variant="outline" className={`w-42 h-32 flex justify-center flex-col hover:bg-gray-50 ${role === 'mentee' ? 'bg-blue-800 text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentee')}>
-                  <IconSchool className="mr-2" size={24} />
-                  Mentee
-              </Button>
-          </div>
           <FormField
             control={form.control}
             name="rememberMe"

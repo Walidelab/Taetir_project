@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/input-otp"
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
+import { useNavigate , useLocation } from 'react-router-dom';
+import { verifyOtp } from '@/services/authService'; 
+import { setToken } from '@/utils/auth';
 
 function isNumeric(val : any) {
   return Number(val) == val;
@@ -18,10 +21,26 @@ function isNumeric(val : any) {
 const OtpPage = () => {
 
     const [otp, setOtp] = useState<string>("");
+    const navigate = useNavigate();
+    const location = useLocation();
+    const email = location.state?.email ||  '';
 
     const handleSubmit = () => {
         if (otp.length === 6 && otp.split('').every(isNumeric)) {
-            console.log(`OTP submitted: ${otp}`);
+            if (!email) {
+                alert("Email not found. Please request a new OTP.");
+                return;
+            }
+            verifyOtp(email, otp)
+                .then((response) => {
+                    alert("OTP verified successfully.");
+                    setToken(response.data.token);
+                    navigate('/reset-password' , { state: { email : email  } });
+                })
+                .catch((error) => {
+                    console.error("Error verifying OTP:", error);
+                    alert("Failed to verify OTP. Please try again.");
+                });
         } else {
             console.error("Please enter a valid 6-digit OTP");
         }

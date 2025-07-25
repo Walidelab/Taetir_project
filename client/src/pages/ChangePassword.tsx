@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { resetPassword } from '@/services/authService';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import {
   Form,
@@ -33,6 +35,11 @@ const FormSchema = z.object({
 
 
 const ChangePassword = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const email = location.state?.email || '';
+  const token = location.state?.token || '';
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -41,9 +48,16 @@ const ChangePassword = () => {
     },
   })
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data.password);
-    // Handle form submission logic here, e.g., send data to an API
-    // You can also reset the form or show a success message
+    resetPassword(email, data.password)
+      .then((response) => {
+        alert("Password changed successfully.");
+        navigate('/signin'); 
+      })
+      .catch((error) => {
+        console.error("Error changing password:", error);
+        alert("Failed to change password. Please try again.");
+      });
+
   }
   return (
     <Card className='w-full w-96' >

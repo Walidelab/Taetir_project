@@ -6,6 +6,7 @@ import TaetirProfileForm from './pages/ProfileCreatePage'
 import MentorProfilePage from './pages/MentorProfilePage'
 import ForgotPassword from './pages/ForgotPassword'
 import OtpPage from './pages/OtpPage'
+import ChangePassword from './pages/ChangePassword'
 import './App.css'
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <Route path="/profile-create" element={<TaetirProfileForm />} />
       <Route path="/mentor-profile" element={<MentorProfilePage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ChangePassword />} />
       <Route path="/otp" element={<OtpPage />} />
     </Routes>
   )
