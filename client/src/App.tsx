@@ -15,6 +15,7 @@ import ChangePassword from './pages/auth/ChangePassword';
 import './App.css';
 import DashboardPage from './pages/app/Dashboard';
 
+
 const FindMentorsPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Find Mentors</h1></div>;
 const MyConnectionsPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>My Connections</h1></div>;
 const MessagesPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Messages</h1></div>;
