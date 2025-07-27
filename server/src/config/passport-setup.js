@@ -71,9 +71,9 @@ passport.use(
 
       await createProfile({
         user_id: newUser.id,
-        first_name: profile.name.givenName,  // Correct property name
-        last_name: profile.name.familyName,   // Correct property name
-        avatar_url: profile.photos[0].value, // Correct property name
+        first_name: profile.name.givenName,  
+        last_name: profile.name.familyName,   
+        avatar_url: profile.photos[0].value, 
       });
 
 
