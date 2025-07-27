@@ -15,6 +15,7 @@ const ChooseRole = () => {
 
     const { user } = useAuth();
     const submitRole = () => {
+        console.log(user)
         if (!user?.id) {
             console.error('User ID is missing.');
             return;
@@ -34,7 +35,7 @@ const ChooseRole = () => {
     }
 
   return (
-    <Card className='w-full'>
+    <Card className='w-xl'>
         <CardHeader>
             <CardTitle className="text-center text-2xl font-bold">Choose Your Role</CardTitle>
         </CardHeader>

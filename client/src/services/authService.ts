@@ -1,13 +1,16 @@
 import api from "../utils/axios"
-import { setToken  } from "../utils/auth"
-import axios from "axios"
+import { AxiosError } from 'axios';
 
 
 export async function loginUser(email: string, password: string) {
-  const response = await api.post("/auth/login", { email, password })
-  setToken(response.data.token)
-  return response.data
+  try {
+    const response = await api.post('/auth/login', { email, password });
+    return response.data; 
+  } catch (error:any) {
+    console.error(error)
+  }
 }
+
 
 export async function chooseRole(userId: string , role: string) {
   const response = await api.post("/users/role", { userId, role })
@@ -15,11 +18,20 @@ export async function chooseRole(userId: string , role: string) {
 }
 
 
-export async function signup(email: string, password: string ) {
-  const response = await api.post("/auth/register", { email, password })
-  setToken(response.data.token)
-  return response.data
+export async function signupUser(username: string, email: string, password: string) {
+  try {
+
+    const response = await api.post('/auth/signup', { username, email, password });
+ 
+    return response.data; 
+
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    const errorMessage = axiosError.response?.data?.message || 'Signup failed';
+    throw new Error(errorMessage);
+  }
 }
+
 
 export async function forgotPassword(email: string) {
   const response = await api.post("/auth/send-otp", { email })

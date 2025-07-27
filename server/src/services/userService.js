@@ -8,48 +8,37 @@ import jwt from "jsonwebtoken";
 
 
 export const createUser = async (userData) => {
-    const { email , password } = userData;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { username , email , password , google_id} = userData;
+    let hashedPassword = 0;
+    if (password) {
+        hashedPassword = password ;
+    }
 
-    const query = ` INSERT INTO users (email, password)
-                   VALUES ($1, $2)
-                   RETURNING id, email, created_at`;
+    const query = ` INSERT INTO users (email, password, google_id , username)
+                   VALUES ($1, $2, $3, $4)
+                   RETURNING id, email, role , created_at`;
 
-    const values = [email, hashedPassword];
+    const values = [email, hashedPassword, google_id, username];
 
     const user = await db.query(query , values);
 
-    return { user: user.rows[0] };
+    return  user.rows[0] ;
 }
 
-export const createUserWithGoogle = async (userData) => {
-    const { id, email } = userData;
-
-    const query = `INSERT INTO users (id, email)
-                   VALUES ($1, $2)
-                   ON CONFLICT (id) DO NOTHING
-                   RETURNING id, email`;
-    const { name, picture } = userData;
-    const query2 = `INSERT INTO profiles (user_id, name, picture)
-                   VALUES ($1, $2, $3)`;
-    
-
-    await db.query(query2, [id, name, picture]);
-
-    const result = await db.query(query, [id, email]);
-
-    if (result.rows.length === 0) {
-        throw new Error('User already exists');
-    }
-
-    return { user: result.rows[0] };
-}
 
 export const getUserByEmail = async (email)=> {
     const query = `SELECT * FROM users WHERE email = $1` ;
     const values = [email];
 
     const result = await db.query(query , values);
+    return result.rows[0];
+}
+
+export const getUserByGoogleId = async (googleId) => {
+    const query = `SELECT * FROM users WHERE google_id = $1`;
+    const values = [googleId];
+
+    const result = await db.query(query, values);
     return result.rows[0];
 }
 
@@ -93,6 +82,58 @@ export const CreateProfile = async (userId) => {
     return result.rows[0];
 }
 
+export const createProfile = async (profileData) => {
+  // Destructure the properties from the single object argument.
+  // Provide default values (null) for all optional fields.
+  const {
+    user_id,
+    first_name = null,
+    last_name = null,
+    avatar_url = null,
+    // Add other fields with defaults as needed
+    role = null, 
+    bio = null,
+    skills = '{}',
+    interests = '{}',
+    learning_objectives = null,
+    experience_level = null
+  } = profileData;
+
+  // Ensure the most important piece of data is present.
+  if (!user_id) {
+    throw new Error("Cannot create a profile without a user_id.");
+  }
+
+  const query = `
+    INSERT INTO profiles (
+      user_id, first_name, last_name, avatar_url, role, bio, skills, interests, learning_objectives, experience_level
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    RETURNING *;
+  `;
+
+  const values = [
+    user_id,
+    first_name,
+    last_name,
+    avatar_url,
+    role,
+    bio,
+    skills,
+    interests,
+    learning_objectives,
+    experience_level
+  ];
+
+  try {
+    const result = await db.query(query, values);
+    return result.rows[0];
+  } catch (error) {
+    console.error("Database error in CreateProfile:", error);
+    throw new Error("Could not create profile.");
+  }
+};
+
 
 export const getProfileByUserId = async (userId) => {
     const query = `SELECT * FROM profiles WHERE user_id = $1`;
@@ -102,11 +143,42 @@ export const getProfileByUserId = async (userId) => {
 }
 
 export const UpdateProfile = async (userId, profileData) => {
-    const { first_name, last_name, role , bio, avatar_url, skills, interests, learning_objectives, experience_level } = profileData;
 
-    const query = `UPDATE profiles SET first_name = $1, last_name = $2, role = $3, bio = $4, avatar_url = $5, skills = $6, interests = $7, learning_objectives = $8, experience_level = $9
-                   WHERE user_id = $10 RETURNING id, user_id, first_name, last_name, role, bio, avatar_url, skills, interests, learning_objectives, experience_level`;
-    const values = [first_name, last_name, role, bio, avatar_url, skills, interests, learning_objectives, experience_level, userId];
-    const result = await db.query(query, values);
-    return result.rows[0];
-}
+   if (!profileData) {
+        console.log(`UpdateProfile called for user ${userId} with no data. Skipping update.`);
+        // You might want to return the existing profile or simply return null.
+        // Returning null is safe and indicates no update was performed.
+        return null; 
+    }
+
+    const fields = Object.keys(profileData);
+    
+    if (fields.length === 0) {
+        // This handles the case where an empty object {} is passed.
+        return null;
+    }
+    // Use map to create an array of "column = $N" strings for the SET clause.
+    // e.g., ["first_name = $1", "bio = $2"]
+    const setClause = fields
+        .map((field, index) => `"${field}" = $${index + 1}`)
+        .join(', ');
+
+
+    const values = [...Object.values(profileData), userId];
+
+    // Construct the final dynamic query.
+    const query = `
+        UPDATE profiles 
+        SET ${setClause} 
+        WHERE user_id = $${values.length} 
+        RETURNING *;
+    `;
+    
+    try {
+        const result = await db.query(query, values);
+        return result.rows[0];
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        throw new Error("Could not update profile.");
+    }
+};

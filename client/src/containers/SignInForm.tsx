@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { loginUser } from '@/services/authService';
 import { useAuth } from '@/hooks/AuthContext';
 import { useNavigate } from 'react-router-dom'; 
-import { setToken, removeToken } from '@/utils/auth';
+
 import {
   Form,
   FormControl,
@@ -32,7 +32,7 @@ const FormSchema = z.object({
 });
 
 export function SignInForm() {
-  const { login, profile } = useAuth();
+  //const { login, profile } = useAuth();
   const navigate = useNavigate();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -44,12 +44,21 @@ export function SignInForm() {
   });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
+
+    try{
+
     const { email, password } = data;
+  
     const res = await loginUser(email, password);
     if (!res) return;
-    await login(res.user, res.token);
+    console.log(res);
+    //login(user, profile);
 
     navigate('/dashboard');
+    }catch (error : any) {
+      console.error("Login failed:", error);
+      form.setError("email", { message: error.message });
+    }
 
   }
 

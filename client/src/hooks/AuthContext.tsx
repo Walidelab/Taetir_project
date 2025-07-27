@@ -1,113 +1,103 @@
-import React, { createContext, useContext, useState, useEffect } from "react"
-import type { ReactNode } from "react"
-import { removeToken, setToken } from "../utils/auth" // keep setToken to hold accessToken in memory/localStorage (optional)
-import api from "../utils/axios"
+import React, { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import api from "@/utils/axios"; 
 
 export interface User {
-  id: string
-  email: string
-  role?: string
+  id: string;
+  email: string;
+  username?: string | null; // Nullable in your database
+  role?: 'mentor' | 'mentee' | null; // Nullable in your database
 }
 
 export interface Profile {
-  id: string
-  userId: string
-  first_name: string
-  last_name: string
-  bio?: string
-  interests: string[]
-  avatar_url?: string
-  learning_objectives?: string
-  experience_level?: string
+  id: string;
+  user_id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  bio?: string | null;
+  interests?: string[] | null;
+  avatar_url?: string | null;
+  learning_objectives?: string | null;
+  experience_level?: string | null;
 }
+
+// --- Context Definition ---
 
 interface AuthContextType {
-  user: User | null
-  profile: Profile | null
-  token: string | null
-  login: (user: User, token: string) => void
-logout: () => void
-  loading: boolean
+  user: User | null;
+  profile: Profile | null;
+  login: (userData: User, profileData: Profile | null) => void;
+  logout: () => void;
+  loading: boolean;
+  refetchUser: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [token, setAuthToken] = useState<string | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // On app load, try to refresh token
-  useEffect(() => {
-    async function initAuth() {
-      const storedToken = localStorage.getItem("token");
-      if (!storedToken) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const { data } = await api.post<{ token: string; user: User }>(
-          "/auth/refresh",
-          {},
-          { headers: { Authorization: `Bearer ${storedToken}` } }
-        );
-        setAuthToken(data.token);
-        setToken(data.token);
-        setUser(data.user);
-
-        // Fetch user profile
-        await fetchProfile(data.token);
-      } catch (err) {
-        console.log("No valid session found:", err);
-        logout();
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    initAuth();
-  }, [])
-
-  async function fetchProfile(authToken?: string) {
+  const checkUserSession = async () => {
+    setLoading(true);
     try {
-      const { data } = await api.get<{ profile: Profile }>("/profile", {
-        headers: { Authorization: `Bearer ${authToken || token}` },
-      })
-      setProfile(data.profile)
-    } catch (err) {
-      console.error("Failed to fetch profile:", err)
-      setProfile(null)
+
+      const response = await api.get('/auth/current_user') ;
+
+       const { user, profile } = response.data; 
+ 
+      setUser(user);
+      setProfile(profile);
+    } catch (error) {
+      
+      console.log("No active session found.");
+      setUser(null);
+      setProfile(null);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  // Login: call backend and set token in memory
- async function login(user: User, token: string) {
-    setAuthToken(token)
-    setToken(token)
-    setUser(user)
-    await fetchProfile(token);
-  }
+  // On initial app load, check for an existing session.
+  useEffect(() => {
+    checkUserSession();
+  }, []);
 
-  // Logout: clear state and remove cookies
-  function logout() {
-    setAuthToken(null)
-    removeToken()
-    setUser(null)
-    setProfile(null)
-  }
+  // This function is called after a successful local login/signup to update the UI immediately.
+  const login = (userData: User, profileData: Profile | null) => {
+    setUser(userData);
+    setProfile(profileData);
+  };
+
+  // This function logs the user out on both the server and the client.
+  const logout = async () => {
+    try {
+      // Tell the server to destroy the session.
+      await api.post('/logout');
+    } catch (error) {
+      console.error("Error during server logout:", error);
+    } finally {
+      // Always clear the state on the client side.
+      setUser(null);
+      setProfile(null);
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, profile, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, profile, login, logout, loading, refetchUser: checkUserSession }}>
       {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};
+
 
 export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }

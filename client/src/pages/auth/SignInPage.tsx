@@ -47,10 +47,12 @@ import api from '@/utils/axios'
         <CardFooter className="flex justify-center flex-col items-center gap-3">
           <div id="google-login" className="flex justify-center mb-2"></div>
           <div className="flex-grow h-px bg-gray-300" />
+          <Link to="http://localhost:5000/api/auth/google" className="w-full">
           <Button  className="w-full bg-white text-gray-800 hover:bg-gray-100">
             <img src={googlesvg} width={18} alt="Google logo" />
             Sign up with Google
           </Button>
+          </Link>
           <p className="text-sm text-gray-500">
             Don't have an account? 
             <Link to="/signup" className="text-blue-500 hover:underline">

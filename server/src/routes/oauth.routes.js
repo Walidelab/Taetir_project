@@ -1,6 +1,7 @@
 import express from 'express';
 import session from 'express-session';
 import '../config/passport-setup.js'; 
+import { getProfileByUserId } from '../services/userService.js';
 
 import passport from 'passport';
 import cors from 'cors';
@@ -19,23 +20,18 @@ app.get(
 app.get(
   '/auth/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/login-failure', // Redirect on failure
+    failureRedirect: '/login-failure', 
   }),
   (req, res) => {
-    // Check if the user's role is null
+      
     if (req.user.role === null) {
-      // If role is not set, redirect to the role setting page
+      
       res.redirect('http://localhost:5173/choose-role'); 
     } else {
-      // If role is already set, redirect to the main dashboard
-      res.redirect('http://localhost:3000/dashboard');
+      res.redirect('http://localhost:5173/dashboard');
     }
   }
 );
-
-app.get('/current_user', (req, res) => {
-  res.send(req.user);
-});
 
 
 

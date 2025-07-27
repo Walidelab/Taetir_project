@@ -1,78 +1,128 @@
 import React from 'react';
-import { SearchIcon , BellIcon  } from 'lucide-react';
-import { useAuth } from '@/hooks/AuthContext';
-// --- Icon Components ---
-// Using a minimal set of icons as seen in the design.
-const StarIcon = ({ className , filled = true }: { className?: string; filled?: boolean }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
+import { Search as SearchIcon, Bell as BellIcon, Star as StarIcon, Users as UsersIcon, CheckCircle as CheckCircleIcon, Clock as ClockIcon, Video as VideoIcon, MessageSquare as MessageSquareIcon, ArrowUpRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/AuthContext'; 
+import MotionCard from '@/components/common/MotionCard';
+import WelcomeBanner from '@/components/common/WelcomeBanner';
 
+// --- Helper: Format the current date & get a time-based greeting ---
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+};
 
-// --- Reusable Components based on the provided design ---
+const getCurrentDate = () => {
+    return new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+};
 
-const DashboardHeader = () => (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div>
-            <h1 className="text-lg font-semibold text-gray-800">Welcome, Mr guest</h1>
-            <p className="text-sm text-gray-500">Tue, 20 July 2025</p>
-        </div>
-        <div className="flex items-center space-x-4 mt-4 md:mt-0 w-full md:w-auto">
-            <div className="relative flex-grow md:flex-grow-0">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type="text" placeholder="Search" className="pl-10 pr-4 py-2 w-full border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+// --- Skeleton Loader Component ---
+const DashboardSkeleton = () => (
+    <div className="p-4 sm:p-6 md:p-8 bg-gray-100 min-h-screen animate-pulse">
+        <div className="flex justify-between items-center mb-8">
+            <div>
+                <div className="h-8 w-56 bg-gray-300 rounded-md"></div>
+                <div className="h-4 w-64 bg-gray-200 rounded-md mt-2"></div>
             </div>
-            <button className="p-2 rounded-full hover:bg-gray-100">
-                <BellIcon className="w-6 h-6 text-gray-500" />
+            <div className="flex items-center space-x-4">
+                <div className="h-10 w-10 bg-gray-300 rounded-full"></div>
+                <div className="h-12 w-12 bg-gray-300 rounded-full"></div>
+            </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+                <div className="h-56 bg-gray-200 rounded-2xl"></div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="h-28 bg-gray-200 rounded-2xl"></div>
+                    <div className="h-28 bg-gray-200 rounded-2xl"></div>
+                    <div className="h-28 bg-gray-200 rounded-2xl"></div>
+                </div>
+                <div className="h-72 bg-gray-200 rounded-2xl"></div>
+            </div>
+            <div className="lg:col-span-1 h-[500px] bg-gray-200 rounded-2xl"></div>
+        </div>
+    </div>
+);
+
+
+
+// --- Improved Components ---
+
+const DashboardHeader = ({ user, profile }: { user: any, profile: any }) => (
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 className="text-2xl font-bold text-gray-800">{getGreeting()}, {profile?.first_name || user?.username || 'Guest'}!</h1>
+            <p className="text-md text-gray-500">{getCurrentDate()}</p>
+        </div>
+        <div className="flex items-center space-x-4 mt-4 md:mt-0">
+             <button className="p-3 rounded-full bg-white shadow-sm hover:bg-gray-100 transition-colors">
+                <BellIcon className="w-6 h-6 text-gray-600" />
             </button>
-            <div className="w-10 h-10 rounded-full bg-gray-200"></div>
+            <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden ring-2 ring-white shadow-sm">
+                {profile?.avatar_url ? 
+                    <img src={profile.avatar_url} alt="User Avatar" className="w-full h-full object-cover" /> :
+                    <span className="flex items-center justify-center h-full w-full bg-blue-500 text-white font-bold text-lg">
+                        {(profile?.first_name?.[0] || user?.username?.[0] || 'G').toUpperCase()}
+                    </span>
+                }
+            </div>
         </div>
     </div>
 );
 
-const WelcomeBanner = ({ name }: { name: string }) => (
-    <div className="relative rounded-2xl p-8 text-white overflow-hidden flex flex-col justify-between h-64" style={{backgroundColor: '#4A6A8A'}}>
-        <div
-            className="absolute bottom-0 left-0 right-0 h-3/4 bg-contain bg-no-repeat bg-bottom opacity-40"
-            style={{backgroundImage: 'url("../../assets/WelcomeBanner.png")'}} // Using a similar mountain silhouette
-        ></div>
-        <div className="relative z-10">
-            <h2 className="text-2xl font-bold">Hello {name} in TAETIR !</h2>
-            <p className="text-blue-100 max-w-md">We're here to help unlock your full potential</p>
+
+const StatCard = ({ title, value, change, icon }: { title: string; value: string | number; change: string, icon: React.ReactNode }) => (
+    <div className="bg-white p-5 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+        <div className="flex justify-between items-start">
+            <div className="p-3 bg-blue-100 rounded-lg">
+                {icon}
+            </div>
+            <div className="flex items-center text-sm font-medium text-green-500">
+                <ArrowUpRight className="w-4 h-4" />
+                <span>{change}</span>
+            </div>
         </div>
-        <div className="relative z-10 bg-white rounded-xl h-20 w-full opacity-50">
-           {/* This is the white box from the design */}
+        <div className="mt-4">
+            <p className="text-3xl font-bold text-gray-800">{value}</p>
+            <p className="text-sm text-gray-500">{title}</p>
         </div>
     </div>
 );
 
-const StatCard = ({ title, value }: { title: string; value: string | number }) => (
-    <div className="bg-white p-5 rounded-2xl shadow-sm">
-        <p className="text-sm text-gray-500 mb-1">{title}</p>
-        <p className="text-3xl font-bold text-gray-800">{value}</p>
-    </div>
-);
-
-const RecentSessions = () => {
-    const sessions = [
-        { name: 'Sarah Mohamed', desc: 'Session terminée sur le Leadership', time: 'il y a 2h', avatar: '40 x 40' },
-        { name: 'Omar Ali', desc: 'Nouvelle session programmée', time: 'il y a 4h', avatar: '40 x 40' },
-        { name: 'Layla Hassan', desc: 'A laissé un avis 5 étoiles', time: 'il y a 1j', avatar: '40 x 40' },
+const ActivityFeed = () => {
+    const activities = [
+        { type: 'review', name: 'Layla Hassan', desc: 'left a 5-star review for your "Leadership" session.', time: '1d ago', avatar: 'https://i.pravatar.cc/40?img=3', icon: <StarIcon className="w-5 h-5 text-white" /> },
+        { type: 'session', name: 'Omar Ali', desc: 'confirmed your session for Jul 29, 2025.', time: '4h ago', avatar: 'https://i.pravatar.cc/40?img=2', icon: <VideoIcon className="w-5 h-5 text-white" /> },
+        { type: 'message', name: 'Sarah Mohamed', desc: 'sent you a new message.', time: '2h ago', avatar: 'https://i.pravatar.cc/40?img=1', icon: <MessageSquareIcon className="w-5 h-5 text-white" /> },
     ];
+
+    const getIconBg = (type: string) => ({
+        review: 'bg-yellow-400',
+        session: 'bg-green-500',
+        message: 'bg-blue-500',
+    }[type] || 'bg-gray-400');
 
     return (
         <div className="bg-white p-6 rounded-2xl shadow-sm h-full">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Recent Sessions</h3>
-            <div className="space-y-5">
-                {sessions.map((session, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-                                {session.avatar}
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-700">{session.name}</p>
-                                <p className="text-sm text-gray-500">{session.desc}</p>
-                            </div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Activity Feed</h3>
+            <div className="space-y-6">
+                {activities.map((item, index) => (
+                    <div key={index} className="flex items-start space-x-4">
+                        <div className={`relative p-2 rounded-full ${getIconBg(item.type)}`}>
+                           {item.icon}
                         </div>
-                        <p className="text-xs text-gray-400 flex-shrink-0 ml-2">{session.time}</p>
+                        <div className="flex-grow">
+                            <p className="text-sm text-gray-700">
+                                <span className="font-semibold">{item.name}</span> {item.desc}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">{item.time}</p>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -80,50 +130,70 @@ const RecentSessions = () => {
     );
 };
 
-const MyNote = () => (
-    <div className="bg-white p-5 rounded-2xl shadow-sm">
-        <div className="flex justify-between items-center mb-3">
-            <h3 className="text-md font-bold text-gray-800">My Note</h3>
-            <StarIcon className="w-5 h-5 text-gray-400" filled={false}/>
-        </div>
-        <div className="flex items-baseline space-x-2">
-            <p className="text-3xl font-bold text-gray-800">4.2</p>
-            <p className="font-semibold text-gray-600">Very Good</p>
-        </div>
-        <div className="flex space-x-1 mt-1 text-yellow-400">
-            <StarIcon className="w-5 h-5" />
-            <StarIcon className="w-5 h-5" />
-            <StarIcon className="w-5 h-5" />
-            <StarIcon className="w-5 h-5" />
-            <StarIcon className="w-5 h-5 text-gray-300" />
-        </div>
-    </div>
-);
-
-
-// --- Main Dashboard Page Component ---
-
-export default function DashboardPage() {
-    const { user } = useAuth();
+const ActivityChart = () => {
+    const data = [ {day: 'Mon', value: 4}, {day: 'Tue', value: 6}, {day: 'Wed', value: 5}, {day: 'Thu', value: 8}, {day: 'Fri', value: 7}, {day: 'Sat', value: 9}, {day: 'Sun', value: 6} ];
+    const maxVal = Math.max(...data.map(d => d.value));
 
     return (
-        <div className="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
-            <DashboardHeader />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column */}
-                <div className="lg:col-span-2 space-y-6">
-                    <WelcomeBanner name={user?.email.split('@')[0] || "Guest"} />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <StatCard title="Active Mentors" value="2 / 3" />
-                        <StatCard title="Session Completed" value="11" />
-                        <StatCard title="Av. Session Length" value="34m" />
+        <div className="bg-white p-6 rounded-2xl shadow-sm">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Weekly Activity</h3>
+            <div className="flex justify-between items-end h-48 space-x-2">
+                {data.map(item => (
+                    <div key={item.day} className="flex-1 flex flex-col items-center justify-end">
+                        <motion.div
+                            className="w-full bg-blue-500 rounded-t-md"
+                            initial={{ height: 0 }}
+                            animate={{ height: `${(item.value / maxVal) * 100}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                        />
+                        <p className="text-xs text-gray-500 mt-2">{item.day}</p>
                     </div>
-                    <MyNote />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+
+
+export default function DashboardPage() {
+    const { user, profile, loading } = useAuth();
+
+    if (loading) {
+        return <DashboardSkeleton />;
+    }
+
+    return (
+        <div className=" min-h-screen font-sans">
+            <MotionCard delay={0}>
+                <DashboardHeader user={user} profile={profile} />
+            </MotionCard>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <MotionCard delay={0.1}>
+                        <WelcomeBanner name={profile?.first_name || user?.username || "Guest"} />
+                    </MotionCard>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <MotionCard delay={0.2}>
+                            <StatCard title="Active Mentees" value="3" change="+12%" icon={<UsersIcon className="w-6 h-6 text-blue-600"/>} />
+                        </MotionCard>
+                        <MotionCard delay={0.3}>
+                            <StatCard title="Sessions This Month" value="11" change="+5.2%" icon={<CheckCircleIcon className="w-6 h-6 text-blue-600"/>} />
+                        </MotionCard>
+                        <MotionCard delay={0.4}>
+                            <StatCard title="Avg. Rating" value="4.8" change="+0.1" icon={<StarIcon className="w-6 h-6 text-blue-600"/>} />
+                        </MotionCard>
+                    </div>
+                    <MotionCard delay={0.6}>
+                        <ActivityChart />
+                    </MotionCard>
                 </div>
 
                 <div className="lg:col-span-1">
-                    <RecentSessions />
+                     <MotionCard delay={0.5}>
+                        <ActivityFeed />
+                    </MotionCard>
                 </div>
             </div>
         </div>

@@ -24,6 +24,7 @@
     "google-one-tap": "^1.0.6",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.525.0",
+    "motion": "^12.23.9",
     "path": "^0.12.7",
     "react": "^19.1.0",
     "react-day-picker": "^9.8.0",

@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Alert } from '@/components/ui/alert';
-import { signup } from '@/services/authService';
+import { signupUser } from '@/services/authService';
 import { useAuth } from '@/hooks/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -25,6 +25,9 @@ import {
 
 
 const FormSchema = z.object({
+    username: z.string().min(1, {
+      message: "Username is required",
+    }),
     email: z.string().email({
         message: "Enter a valid email",
     }),
@@ -49,6 +52,7 @@ export function AuthForm() {
     const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -57,16 +61,12 @@ export function AuthForm() {
   })
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try{
-      const { email, password  } = data;
-      const res = await signup(email, password);
-      login(res.user, res.token);
-      if (data.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
-      else {
-        localStorage.removeItem('rememberMe');
-      }
-      navigate("/choose-role" , { state : { userId : res.user.id } });
+      const { username ,email, password  } = data;
+      const { user, profile } = await signupUser(username, email, password);
+
+       login(user, profile);
+
+      navigate("/choose-role");
     }catch (error : any) {
       console.error("Login failed:", error);
       Error(error.response?.data?.message || "Login failed");
@@ -76,6 +76,19 @@ export function AuthForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} >
        <div className='flex flex-col mx-auto gap-4 '>
+         <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>username</FormLabel>
+              <FormControl>
+                <Input placeholder="username" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
        <FormField
           control={form.control}
           name="email"

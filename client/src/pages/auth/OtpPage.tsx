@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { useNavigate , useLocation } from 'react-router-dom';
 import { verifyOtp } from '@/services/authService'; 
-import { setToken } from '@/utils/auth';
 
 function isNumeric(val : any) {
   return Number(val) == val;
@@ -34,7 +33,6 @@ const OtpPage = () => {
             verifyOtp(email, otp)
                 .then((response) => {
                     alert("OTP verified successfully.");
-                    setToken(response.data.token);
                     navigate('/reset-password' , { state: { email : email  } });
                 })
                 .catch((error) => {
