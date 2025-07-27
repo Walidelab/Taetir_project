@@ -2,10 +2,21 @@ import React from 'react';
 import { Search as SearchIcon, Bell as BellIcon, Star as StarIcon, Users as UsersIcon, CheckCircle as CheckCircleIcon, Clock as ClockIcon, Video as VideoIcon, MessageSquare as MessageSquareIcon, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/AuthContext'; 
+import { useState , useEffect } from 'react';
+import api from '@/utils/axios';
 import MotionCard from '@/components/common/MotionCard';
 import WelcomeBanner from '@/components/common/WelcomeBanner';
 
-// --- Helper: Format the current date & get a time-based greeting ---
+
+interface DashboardStats {
+  activeConnections: number;
+  sessionsThisMonth: number;
+  averageRating: number;
+  connectionChangePercent: number;
+  sessionChangePercent: number;
+  ratingChange: number;
+}
+
 const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -22,7 +33,6 @@ const getCurrentDate = () => {
     });
 };
 
-// --- Skeleton Loader Component ---
 const DashboardSkeleton = () => (
     <div className="p-4 sm:p-6 md:p-8 bg-gray-100 min-h-screen animate-pulse">
         <div className="flex justify-between items-center mb-8">
@@ -52,7 +62,6 @@ const DashboardSkeleton = () => (
 
 
 
-// --- Improved Components ---
 
 const DashboardHeader = ({ user, profile }: { user: any, profile: any }) => (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -155,16 +164,46 @@ const ActivityChart = () => {
 }
 
 
-
 export default function DashboardPage() {
-    const { user, profile, loading } = useAuth();
+    const { user, profile, loading: authLoading } = useAuth();
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [statsLoading, setStatsLoading] = useState(true);
 
-    if (loading) {
+    useEffect(() => {
+        // This function fetches the dashboard statistics from the backend.
+        const fetchDashboardStats = async () => {
+            if (!user) {
+                // Don't fetch if the user isn't logged in yet.
+                setStatsLoading(false);
+                return;
+            }
+            try {
+                setStatsLoading(true);
+                const response = await api.get('/dashboard/stats');
+                setStats(response.data);
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats:", error);
+                // Set stats to null or default values on error
+                setStats(null);
+            } finally {
+                setStatsLoading(false);
+            }
+        };
+
+        // We only run the fetch function once the initial auth check is complete.
+        if (!authLoading) {
+            fetchDashboardStats();
+        }
+    }, [authLoading, user]); // Re-run if authLoading or user changes.
+
+    // Show a skeleton loader while either auth or stats are loading.
+    if (authLoading) {
         return <DashboardSkeleton />;
     }
+    console.log(stats)
 
     return (
-        <div className=" min-h-screen font-sans">
+        <div className="min-h-screen font-sans">
             <MotionCard delay={0}>
                 <DashboardHeader user={user} profile={profile} />
             </MotionCard>
@@ -175,23 +214,40 @@ export default function DashboardPage() {
                         <WelcomeBanner name={profile?.first_name || user?.username || "Guest"} />
                     </MotionCard>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* The StatCard components now receive real data from the 'stats' state.
+                          We use placeholder values '??' if the stats object fails to load.
+                        */}
                         <MotionCard delay={0.2}>
-                            <StatCard title="Active Mentees" value="3" change="+12%" icon={<UsersIcon className="w-6 h-6 text-blue-600"/>} />
+                            <StatCard 
+                                title="Active Mentees" 
+                                value={stats?.activeConnections ?? 'N/A'} 
+                                change={`+${stats?.connectionChangePercent ?? 0}%`}
+                                icon={<UsersIcon className="w-6 h-6 text-blue-600"/>} 
+                            />
                         </MotionCard>
                         <MotionCard delay={0.3}>
-                            <StatCard title="Sessions This Month" value="11" change="+5.2%" icon={<CheckCircleIcon className="w-6 h-6 text-blue-600"/>} />
+                            <StatCard 
+                                title="Sessions This Month" 
+                                value={stats?.sessionsThisMonth ?? 'N/A'} 
+                                change={`+${stats?.sessionChangePercent ?? 0}%`}
+                                icon={<CheckCircleIcon className="w-6 h-6 text-blue-600"/>} 
+                            />
                         </MotionCard>
                         <MotionCard delay={0.4}>
-                            <StatCard title="Avg. Rating" value="4.8" change="+0.1" icon={<StarIcon className="w-6 h-6 text-blue-600"/>} />
+                            <StatCard 
+                                title="Avg. Rating" 
+                                value={stats?.averageRating ?? 'N/A'} 
+                                change={`+${stats?.ratingChange ?? 0}`}
+                                icon={<StarIcon className="w-6 h-6 text-blue-600"/>} 
+                            />
                         </MotionCard>
                     </div>
-                    <MotionCard delay={0.6}>
+                     <MotionCard delay={0.6}>
                         <ActivityChart />
                     </MotionCard>
                 </div>
-
                 <div className="lg:col-span-1">
-                     <MotionCard delay={0.5}>
+                    <MotionCard delay={0.5}>
                         <ActivityFeed />
                     </MotionCard>
                 </div>
