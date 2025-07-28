@@ -5,7 +5,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-decoration: none;
 }
+
 
 .logo {
   height: 6em;

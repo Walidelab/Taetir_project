@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = async () => {
     try {
       // Tell the server to destroy the session.
-      await api.post('/logout');
+      await api.get('/auth/logout');
     } catch (error) {
       console.error("Error during server logout:", error);
     } finally {
