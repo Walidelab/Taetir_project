@@ -43,6 +43,17 @@ router.get('/current_user', async (req, res) => {
   } else {
     res.status(401).json({ message: 'Not authenticated' });
   }
+
+});
+
+router.get('/logout', (req, res, next) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid'); 
+      res.status(200).json({ message: 'Logged out successfully' });
+    });
+  });
 });
 
 export default router;
