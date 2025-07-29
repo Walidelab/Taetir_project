@@ -7,20 +7,22 @@ import DashboardLayout from "@/layouts/dashboardLayout";
 import SigninPage from './pages/auth/SignInPage';
 import SignupPage from './pages/auth/SignupPage';
 import ChooseRole from './pages/auth/ChooseRole';
-import TaetirProfileForm from './pages/app/ProfilePage';
+import { CompleteProfilePage } from './pages/auth/CompleteProfilePage';
 import MentorProfilePage from './pages/auth/MentorProfilePage';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import OtpPage from './pages/auth/OtpPage';
 import ChangePassword from './pages/auth/ChangePassword';
 import './App.css';
 import DashboardPage from './pages/app/Dashboard';
+import FindMentors from './pages/app/FindMentor';
+import Profile from './pages/app/Profile';
+import MyConnections from './pages/app/Connections';
+import Calendar from './pages/app/Calendar';
+import Messages from './pages/app/Message';
+import Feedbacks from './pages/app/Feedback';
 
 
-const FindMentorsPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Find Mentors</h1></div>;
-const MyConnectionsPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>My Connections</h1></div>;
-const MessagesPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Messages</h1></div>;
-const CalendarPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Calendar</h1></div>;
-const FeedbacksPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Feedbacks</h1></div>;
+
 
 const SettingsPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Settings</h1></div>;
 
@@ -37,16 +39,17 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ChangePassword />} />
       <Route path="/otp" element={<OtpPage />} />
+      <Route path='/complete-setup' element= {<CompleteProfilePage />} />
 
 
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/mentors" element={<FindMentorsPage />} />
-        <Route path="/connections" element={<MyConnectionsPage />} />
-        <Route path="/messages" element={<MessagesPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
-        <Route path="/feedbacks" element={<FeedbacksPage />} />
-        <Route path="/profile" element={<TaetirProfileForm />} />
+        <Route path="/mentors" element={<FindMentors />} />
+        <Route path="/connections" element={<MyConnections />} />
+        <Route path="/messages" element={<Messages />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/feedbacks" element={<Feedbacks />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 

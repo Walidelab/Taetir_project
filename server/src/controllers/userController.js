@@ -178,6 +178,7 @@ export const verifyOTP = async (req, res) => {
     }
 }
 
+
 export const UpdateRole = async (req, res) => {
     try {
         const { userId, role } = req.body;

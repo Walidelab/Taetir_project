@@ -5,7 +5,6 @@ import {Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { getUserById , createUser , createProfile , getUserByGoogleId, getUserByEmail, UpdateProfile} from '../services/userService.js';
 import bcrypt from 'bcrypt'
-import { updateUserProfile } from '../controllers/profileController.js';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;

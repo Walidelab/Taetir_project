@@ -90,13 +90,7 @@ export const createProfile = async (profileData) => {
     first_name = null,
     last_name = null,
     avatar_url = null,
-    // Add other fields with defaults as needed
-    role = null, 
-    bio = null,
-    skills = '{}',
-    interests = '{}',
-    learning_objectives = null,
-    experience_level = null
+
   } = profileData;
 
   // Ensure the most important piece of data is present.
@@ -106,9 +100,9 @@ export const createProfile = async (profileData) => {
 
   const query = `
     INSERT INTO profiles (
-      user_id, first_name, last_name, avatar_url, role, bio, skills, interests, learning_objectives, experience_level
+      user_id, first_name, last_name, avatar_url
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    VALUES ($1, $2, $3, $4)
     RETURNING *;
   `;
 
@@ -116,13 +110,7 @@ export const createProfile = async (profileData) => {
     user_id,
     first_name,
     last_name,
-    avatar_url,
-    role,
-    bio,
-    skills,
-    interests,
-    learning_objectives,
-    experience_level
+    avatar_url
   ];
 
   try {
@@ -181,4 +169,26 @@ export const UpdateProfile = async (userId, profileData) => {
         console.error("Error updating profile:", error);
         throw new Error("Could not update profile.");
     }
+};
+
+export const getRoleProfileByProfileId = async (profileId, role) => {
+  let query;
+  
+  // Determine which table to query based on the role
+  if (role === 'mentor') {
+    query = `SELECT * FROM mentor_profiles WHERE profile_id = $1`;
+  } else if (role === 'mentee') {
+    query = `SELECT * FROM mentee_profiles WHERE profile_id = $1`;
+  } else {
+    // If the role is invalid or not set, we can't fetch anything
+    return null;
+  }
+
+  try {
+    const result = await db.query(query, [profileId]);
+    return result.rows[0] || null; // Return the found profile or null
+  } catch (error) {
+    console.error(`Error fetching ${role} profile:`, error);
+    throw new Error(`Could not fetch ${role} profile.`);
+  }
 };

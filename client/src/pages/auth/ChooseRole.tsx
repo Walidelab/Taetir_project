@@ -13,22 +13,12 @@ const ChooseRole = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const { user } = useAuth();
     const submitRole = () => {
-        console.log(user)
-        if (!user?.id) {
-            console.error('User ID is missing.');
-            return;
-        }
+       
         if (role) {
-            chooseRole(user.id, role)
-                .then(() => {
-                    // Redirect to dashboard
-                    navigate('/dashboard');
-                })
-                .catch(error => {
-                    console.error('Error setting role:', error);
-                });
+            
+                navigate('/complete-setup' , { state : {role : role} })
+                
         } else {
             console.error('Please select a role before proceeding.');
         }

@@ -45,14 +45,13 @@ export const getDashboardStats = async (req, res, next) => {
       activeConnections,
       sessionsThisMonth,
       averageRating: parseFloat(averageRating),
-      connectionChangePercent: 12,
-      sessionChangePercent: -4,
-      ratingChange: 0.1
+      connectionChangePercent: 0,
+      sessionChangePercent: 0,
+      ratingChange: 0
     };
 
     res.status(200).json(stats);
-    console.log(stats)
-
+   
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
     next(error); // Pass the error to your global error handler

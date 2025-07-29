@@ -11,6 +11,8 @@ import profileRoutes from './routes/profile.routes.js';
 import mentorRoutes from './routes/mentor.routes.js';
 import app2 from './routes/oauth.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
+import connectionRoutes from './routes/connection.routes.js';
+import converstionRoutes from './routes/messages.route.js';
 
 import './config/passport-setup.js'; 
 
@@ -45,5 +47,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/mentors', mentorRoutes);
 app.use('/api', app2);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/connections', connectionRoutes);
+app.use('/api/conversations', converstionRoutes);
 
 export default app;

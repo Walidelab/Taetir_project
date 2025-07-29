@@ -3,7 +3,7 @@ import express from "express";
 const router = express.Router();
 
 import { signupController  , ChangePassword , refreshToken , verifyOTP , getUser} from "../controllers/userController.js";
-import { getProfileByUserId } from "../services/userService.js";
+import { getProfileByUserId  , getRoleProfileByProfileId} from "../services/userService.js";
 import { protect } from "../middleware/protect.js";
 import { sendOTP } from "../controllers/userController.js"
 import passport from "passport";
@@ -35,15 +35,32 @@ router.post('/login' , (req, res, next) => {
     })(req, res, next);
 });
 
-router.get('/current_user', async (req, res) => {
-
-  if (req.user) {
-    const profile = await getProfileByUserId(req.user.id) ;
-    res.status(200).json({ user: req.user, profile: profile });
-  } else {
-    res.status(401).json({ message: 'Not authenticated' });
+router.get('/current_user', async (req, res, next) => {
+  // 1. Check if a user is logged in via the session
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not authenticated' });
   }
 
+  try {
+    const user = req.user;
+
+    // 2. Fetch the main profile associated with the user
+    const profile = await getProfileByUserId(user.id);
+
+    let roleProfile = null;
+    // 3. If a role and profile exist, fetch the role-specific data
+    if (user.role && profile) {
+      // This service function will check the role and query the correct table
+      roleProfile = await getRoleProfileByProfileId(profile.id, user.role);
+    }
+    
+    // 4. Send back a complete user object to the frontend
+    res.status(200).json({ user, profile, roleProfile });
+
+  } catch (error) {
+    console.error("Error fetching current user data:", error);
+    next(error); // Pass to your global error handler
+  }
 });
 
 router.get('/logout', (req, res, next) => {

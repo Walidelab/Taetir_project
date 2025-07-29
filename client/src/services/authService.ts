@@ -1,10 +1,49 @@
 import api from "../utils/axios"
 import { AxiosError } from 'axios';
 
+interface profileData {
+    first_name: string;
+    last_name: string;
+    bio: string;
+    title: string;
+    location: string;
+    languages: string[];
+}
+
+interface roleSpecificData {
+    professional_experience?: string;
+    company?: string;
+    skills?: string[];
+    availability?: any;
+    learning_objectives?: string;
+    experience_level?: string;
+    mentoring_preferences?: string;
+}
+
+
+
 
 export async function loginUser(email: string, password: string) {
   try {
     const response = await api.post('/auth/login', { email, password });
+    return response.data; 
+  } catch (error:any) {
+    console.error(error)
+  }
+}
+
+export async function completeUserProfile({ role, profileData, roleSpecificData } : {role :string , profileData : profileData , roleSpecificData : roleSpecificData}){
+ try {
+    const response = await api.post('/profile/update', { role, profileData , roleSpecificData });
+    return response.data; 
+  } catch (error:any) {
+    console.error(error)
+  }
+}
+
+export async function updateUserProfile({ profileData, roleSpecificData } : {role :string , profileData : profileData , roleSpecificData : roleSpecificData}){
+ try {
+    const response = await api.post('/profile/change', { profileData , roleSpecificData });
     return response.data; 
   } catch (error:any) {
     console.error(error)
