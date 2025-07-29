@@ -1,35 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate } from "react-router-dom";
+import SigninPage from "./pages/SignInPage";
+import SignupPage from "./pages/SignupPage";
+import ChooseRole from "./pages/ChooseRole";
+import TaetirProfileForm from "./pages/ProfileCreatePage";
+import MentorProfilePage from "./pages/MentorProfilePage";
+import ForgotPassword from "./pages/ForgotPassword";
+import OtpPage from "./pages/OtpPage";
+import ChangePassword from "./pages/ChangePassword";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div className=''>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo react" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo " alt="React logo" />
-        </a>
-      </div>
-      <h1 >Vite + Reactfdf</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <Routes>
+        <div className="min-h-screen bg-gray-50">
+          <Sidebar />
+          <div className="ml-64">
+            <Header />
+            <main className="p-6">
+              <Routes>
+                <Route
+                  path="/"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/find-mentors" element={<FindMentors />} />
+                <Route path="/connections" element={<MyConnections />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/feedbacks" element={<Feedbacks />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
+                {/* Optional fallback */}
+                <Route path="*" element={<div>404 - Not Found</div>} />
+              </Routes>
+            </main>
+          </div>
+        </div>
+        <Route path="/" element={<Navigate to="/signin" />} />
+        <Route path="/signin" element={<SigninPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/choose-role" element={<ChooseRole />} />
+        <Route path="/profile-create" element={<TaetirProfileForm />} />
+        <Route path="/mentor-profile" element={<MentorProfilePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ChangePassword />} />
+        <Route path="/otp" element={<OtpPage />} />
+      </Routes>
+    </div>
+  );
 }
 
-export default App
+export default App;
