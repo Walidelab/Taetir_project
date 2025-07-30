@@ -203,7 +203,7 @@ export default function DashboardPage() {
                        
                         <MotionCard delay={0.2}>
                             <StatCard 
-                                title="Active Mentees" 
+                                title="Active Users" 
                                 value={stats?.activeConnections ?? 'N/A'} 
                                 change={`${stats?.connectionChangePercent ?? 0}%`}
                                 icon={<UsersIcon className="w-6 h-6 text-blue-600"/>} 

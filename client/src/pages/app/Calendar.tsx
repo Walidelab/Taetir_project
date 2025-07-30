@@ -1,235 +1,382 @@
-import React, { useState } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  Clock,
-  Video,
-  MapPin,
-  User,
-} from "lucide-react";
-import { SAMPLE_CALENDAR_EVENTS } from "@/utils/constants";
-import type { CalendarEvent } from "@/utils/types";
-import NewSessionButton from "./Newsession";
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Plus, Clock, User, MapPin, X, Star } from 'lucide-react';
+import api from '@/utils/axios';
+import { useAuth } from '@/hooks/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { isToday, format } from 'date-fns';
 
-export default function Calendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [events] = useState<CalendarEvent[]>(SAMPLE_CALENDAR_EVENTS);
-  const [view, setView] = useState<"month" | "week" | "day">("month");
+// --- Type Definitions ---
+interface CalendarEvent {
+    id: number;
+    title: string;
+    startTime: string;
+    endTime: string;
+    status: 'scheduled' | 'completed' | 'cancelled';
+    format: 'virtual' | 'in_person';
+    participantName: string;
+}
 
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+interface Connection {
+    connectionId: number;
+    participantName: string;
+}
 
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// --- Helper Functions ---
+const getEventColor = (title: string) => {
+    const colors = [
+        'bg-blue-100 text-blue-800 border-blue-300',
+        'bg-purple-100 text-purple-800 border-purple-300',
+        'bg-green-100 text-green-800 border-green-300',
+        'bg-yellow-100 text-yellow-800 border-yellow-300',
+        'bg-pink-100 text-pink-800 border-pink-300',
+        'bg-indigo-100 text-indigo-800 border-indigo-300',
+    ];
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) {
+        hash = title.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+};
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+// --- Modal Components ---
 
-    const days = [];
-    for (let i = 0; i < startingDayOfWeek; i++) days.push(null);
-    for (let day = 1; day <= daysInMonth; day++) days.push(day);
-    return days;
-  };
-
-  const navigateMonth = (direction: "prev" | "next") => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1));
-      return newDate;
+const NewSessionModal = ({ connections, onClose, onSessionCreated }: { connections: Connection[], onClose: () => void, onSessionCreated: () => void }) => {
+    const [formData, setFormData] = useState({
+        connectionId: '',
+        title: '',
+        objectives: '',
+        date: '',
+        startTime: '',
+        endTime: '',
+        format: 'virtual' as 'virtual' | 'in_person',
     });
-  };
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  const getEventsForDate = (day: number) => {
-    const dateStr = `${currentDate.getFullYear()}-${String(
-      currentDate.getMonth() + 1
-    ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return events.filter((event) => event.date === dateStr);
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const startDateTime = new Date(`${formData.date}T${formData.startTime}`);
+            const endDateTime = new Date(`${formData.date}T${formData.endTime}`);
 
-  const getEventTypeColor = (type: string) => {
+            if (endDateTime <= startDateTime) {
+                setError("End time must be after start time.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            await api.post('/sessions', {
+                ...formData,
+                startTime: startDateTime.toISOString(),
+                endTime: endDateTime.toISOString(),
+            });
+            onSessionCreated();
+            onClose();
+        } catch (error: any) {
+            console.error("Failed to create session:", error);
+            setError(error.response?.data?.message || "Failed to create session.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
-      {
-        session: "bg-blue-500",
-        meeting: "bg-green-500",
-        review: "bg-purple-500",
-      }[type] || "bg-gray-500"
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-xl shadow-2xl w-full max-w-lg"
+            >
+                <form onSubmit={handleSubmit}>
+                    <div className="p-6 border-b">
+                        <h2 className="text-xl font-bold text-gray-800">Schedule a New Session</h2>
+                    </div>
+                    <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        <input type="text" placeholder="Session Title (e.g., React Hooks Deep Dive)" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required className="w-full p-2 border rounded-md" />
+                        <select value={formData.connectionId} onChange={e => setFormData({...formData, connectionId: e.target.value})} required className="w-full p-2 border rounded-md bg-white">
+                            <option value="">Select a Connection</option>
+                            {connections.map(c => <option key={c.connectionId} value={c.connectionId}>{c.participantName}</option>)}
+                        </select>
+                        <textarea placeholder="Objectives for the session..." value={formData.objectives} onChange={e => setFormData({...formData, objectives: e.target.value})} className="w-full p-2 border rounded-md min-h-[80px]"></textarea>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required className="p-2 border rounded-md" />
+                            <input type="time" value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} required className="p-2 border rounded-md" />
+                            <input type="time" value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} required className="p-2 border rounded-md" />
+                        </div>
+                        <select value={formData.format} onChange={e => setFormData({...formData, format: e.target.value as any})} required className="w-full p-2 border rounded-md bg-white">
+                            <option value="virtual">Virtual</option>
+                            <option value="in_person">In-Person</option>
+                        </select>
+                        {error && <p className="text-sm text-red-600">{error}</p>}
+                    </div>
+                    <div className="p-6 bg-gray-50 rounded-b-xl flex justify-end gap-4">
+                        <button type="button" onClick={onClose} className="px-6 py-2 border rounded-lg font-semibold hover:bg-gray-100 transition-colors">Cancel</button>
+                        <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold disabled:bg-blue-300 hover:bg-blue-700 transition-colors">
+                            {isSubmitting ? 'Scheduling...' : 'Schedule Session'}
+                        </button>
+                    </div>
+                </form>
+            </motion.div>
+        </div>
     );
-  };
+};
 
-  const getStatusColor = (status: string) => {
+const ReviewModal = ({ session, onClose, onReviewSubmitted }: { session: CalendarEvent, onClose: () => void, onReviewSubmitted: () => void }) => {
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async () => {
+        setIsSubmitting(true);
+        try {
+            // This calls the POST /api/reviews endpoint from the Canvas
+            await api.post('/feedbacks/reviews', { 
+                sessionId: session.id, 
+                rating, 
+                comment 
+            });
+            onReviewSubmitted(); // This will refetch the calendar events
+            onClose(); // Close the modal on success
+        } catch (error: any) {
+            console.error("Failed to submit review:", error);
+            alert(error.response?.data?.message || "Failed to submit review.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
-      {
-        confirmed: "border-green-500 bg-green-50",
-        pending: "border-yellow-500 bg-yellow-50",
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-xl shadow-2xl w-full max-w-md"
+            >
+                <div className="p-6 border-b">
+                    <h2 className="text-xl font-bold text-gray-800">Leave a Review</h2>
+                    <p className="text-sm text-gray-500">How was your session "{session.title}"?</p>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div className="flex justify-center space-x-2">
+                        {[...Array(5)].map((_, i) => (
+                            <Star
+                                key={i}
+                                size={32}
+                                className={`cursor-pointer transition-colors ${i < rating ? 'text-yellow-400 fill-current' : 'text-gray-300 hover:text-yellow-200'}`}
+                                onClick={() => setRating(i + 1)}
+                            />
+                        ))}
+                    </div>
+                    <textarea
+                        placeholder="Add a comment..."
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        className="w-full p-2 border rounded-md min-h-[100px]"
+                    />
+                </div>
+                <div className="p-6 bg-gray-50 rounded-b-xl flex justify-end gap-4">
+                    <button onClick={onClose} className="px-6 py-2 border rounded-lg font-semibold hover:bg-gray-100 transition-colors">Skip</button>
+                    <button onClick={handleSubmit} disabled={isSubmitting || rating === 0} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold disabled:bg-blue-300 hover:bg-blue-700 transition-colors">
+                        {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
+// --- Upcoming Events Component ---
+const UpcomingEvents = ({ events, onUpdateStatus, onReview }: { events: CalendarEvent[], onUpdateStatus: (id: number, status: 'completed' | 'cancelled') => void, onReview: (session: CalendarEvent) => void }) => {
+    const getStatusColor = (status: string) => ({
+        scheduled: "border-blue-500 bg-blue-50",
+        completed: "border-green-500 bg-green-50",
         cancelled: "border-red-500 bg-red-50",
-      }[status] || "border-gray-300 bg-gray-50"
-    );
-  };
+    }[status] || "border-gray-300 bg-gray-50");
 
-  const days = getDaysInMonth(currentDate);
+    const now = new Date();
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-2xl shadow-md border p-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Calendar</h1>
-          <p className="text-gray-500 text-sm">Track your sessions </p>
-        </div>
-        <NewSessionButton />
-      </div>
+    return (
+        <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming & Recent Events</h3>
+            <div className="space-y-4">
+                {events.length > 0 ? events.map(event => {
+                    const startTime = new Date(event.startTime);
+                    const endTime = new Date(event.endTime);
+                    const isJoinable = now >= new Date(startTime.getTime() - 30 * 60 * 1000) && now <= endTime;
+                    const isCompletable = now > endTime && event.status === 'scheduled';
+                    const isCancellable = now < startTime && event.status === 'scheduled';
 
-      {/* Controls */}
-      <div className="bg-white rounded-2xl shadow-md border p-4 flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigateMonth("prev")}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h2>
-          <button
-            onClick={() => navigateMonth("next")}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-
-        <div className="flex gap-2">
-          {["month", "week", "day"].map((viewType) => (
-            <button
-              key={viewType}
-              onClick={() => setView(viewType as any)}
-              className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${
-                view === viewType
-                  ? "bg-blue-100 text-blue-700"
-                  : "hover:bg-gray-100 text-gray-600"
-              }`}
-            >
-              {viewType.charAt(0).toUpperCase() + viewType.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2 text-sm">
-        {daysOfWeek.map((day) => (
-          <div
-            key={day}
-            className="text-center text-gray-500 font-medium py-2 bg-gray-50 rounded-lg"
-          >
-            {day}
-          </div>
-        ))}
-        {days.map((day, index) => (
-          <div
-            key={index}
-            className={`min-h-[100px] p-2 border rounded-xl ${
-              day ? "bg-white hover:bg-gray-50" : "bg-gray-50 text-transparent"
-            } transition`}
-          >
-            {day && (
-              <>
-                <div className="text-gray-800 font-semibold mb-1">{day}</div>
-                <div className="space-y-1">
-                  {getEventsForDate(day).map((event) => (
-                    <div
-                      key={event.id}
-                      className={`p-1 rounded text-xs text-white truncate ${getEventTypeColor(
-                        event.type
-                      )}`}
-                      title={`${event.title} with ${event.mentorName} at ${event.time}`}
-                    >
-                      {event.time} {event.title}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Upcoming Events */}
-      <div className="bg-white rounded-2xl shadow-md border p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Upcoming Events
-        </h3>
-        <div className="space-y-4">
-          {events.map((event) => (
-            <div
-              key={event.id}
-              className={`p-4 rounded-xl border-l-4 ${getStatusColor(
-                event.status
-              )} transition-shadow hover:shadow-sm`}
-            >
-              <div className="flex justify-between items-start">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-3 h-3 rounded-full ${getEventTypeColor(
-                        event.type
-                      )}`}
-                    ></div>
-                    <h4 className="font-medium text-gray-900">{event.title}</h4>
-                    <span
-                      className={`text-xs rounded-full px-2 py-0.5 ${
-                        event.status === "confirmed"
-                          ? "bg-green-100 text-green-800"
-                          : event.status === "pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }
-                    `}
-                    >
-                      {event.status}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <User size={14} /> {event.mentorName}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={14} /> {event.time} ({event.duration}min)
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin size={14} />{" "}
-                      {new Date(event.date).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Join
-                  </button>
-                </div>
-              </div>
+                    return (
+                        <div key={event.id} className={`p-4 rounded-xl border-l-4 ${getStatusColor(event.status)}`}>
+                            <div className="flex justify-between items-start">
+                                <div className="space-y-2">
+                                    <h4 className={`font-medium text-gray-900 ${event.status === 'cancelled' && 'line-through'}`}>{event.title}</h4>
+                                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                                        <div className="flex items-center gap-1.5"><User size={14} /> {event.participantName}</div>
+                                        <div className="flex items-center gap-1.5"><Clock size={14} /> {format(startTime, 'p')}</div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                    {isJoinable && <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">Join</button>}
+                                    {isCompletable && <button onClick={() => { onUpdateStatus(event.id, 'completed'); onReview(event); }} className="px-3 py-1 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Mark as Completed</button>}
+                                    {isCancellable && <button onClick={() => onUpdateStatus(event.id, 'cancelled')} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"><X size={16} /></button>}
+                                    {event.status === 'completed' && <button onClick={() => onReview(event)} className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Leave Review</button>}
+                                    {event.status === 'cancelled' && <span className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg font-medium">Cancelled</span>}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }) : (
+                    <p className="text-sm text-gray-500 text-center py-4">No events scheduled for this month.</p>
+                )}
             </div>
-          ))}
         </div>
-      </div>
-    </div>
-  );
+    );
+};
+
+
+// --- Main Calendar Component ---
+export default function Calendar() {
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
+    const [connections, setConnections] = useState<Connection[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showSessionModal, setShowSessionModal] = useState(false);
+    const [reviewSession, setReviewSession] = useState<CalendarEvent | null>(null);
+
+    const fetchEvents = async (date: Date) => {
+        setLoading(true);
+        try {
+            const response = await api.get('/sessions', {
+                params: { year: date.getFullYear(), month: date.getMonth() + 1 },
+            });
+            setEvents(response.data);
+        } catch (error) {
+            console.error("Failed to fetch events:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchConnections = async () => {
+        try {
+            const response = await api.get('/connections');
+            const formattedConnections = response.data
+                .filter((c: any) => c.status === 'accepted')
+                .map((c: any) => ({
+                    connectionId: c.id,
+                    participantName: `${c.first_name} ${c.last_name}`
+                }));
+            setConnections(formattedConnections);
+        } catch (error) {
+            console.error("Failed to fetch connections:", error);
+        }
+    };
+
+    const handleUpdateStatus = async (sessionId: number, status: 'completed' | 'cancelled') => {
+        try {
+            await api.put(`/sessions/${sessionId}/status`, { status });
+            fetchEvents(currentDate);
+        } catch (error) {
+            console.error(`Failed to mark session as ${status}:`, error);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents(currentDate);
+    }, [currentDate]);
+
+    useEffect(() => {
+        fetchConnections();
+    }, []);
+    
+    const listEvents = useMemo(() => {
+        return events
+            .filter(event => new Date(event.endTime) > new Date(Date.now() - 24 * 60 * 60 * 1000) || event.status === 'scheduled')
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    }, [events]);
+
+    const daysInMonth = (date: Date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const days = [];
+        for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
+        for (let day = 1; day <= lastDay.getDate(); day++) days.push(new Date(year, month, day));
+        return days;
+    };
+
+    const navigateMonth = (direction: "prev" | "next") => {
+        setCurrentDate(prev => {
+            const newDate = new Date(prev);
+            newDate.setDate(1);
+            newDate.setMonth(prev.getMonth() + (direction === "next" ? 1 : -1));
+            return newDate;
+        });
+    };
+
+    const days = daysInMonth(currentDate);
+
+    return (
+        <div className="space-y-6 font-sans">
+            <div className="bg-white rounded-2xl shadow-sm border p-6 flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">My Calendar</h1>
+                    <p className="text-gray-500">Track and schedule your mentorship sessions.</p>
+                </div>
+                <button onClick={() => setShowSessionModal(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold">
+                    <Plus size={18} /><span>New Session</span>
+                </button>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigateMonth("prev")} className="p-2 hover:bg-gray-100 rounded-lg"><ChevronLeft size={20} /></button>
+                    <h2 className="text-xl font-semibold text-gray-800 w-48 text-center">{format(currentDate, 'MMMM yyyy')}</h2>
+                    <button onClick={() => navigateMonth("next")} className="p-2 hover:bg-gray-100 rounded-lg"><ChevronRight size={20} /></button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 text-sm">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="text-center text-gray-500 font-medium py-2">{day}</div>
+                ))}
+                {days.map((day, index) => (
+                    <div key={index} className={`min-h-[120px] p-2 border rounded-lg ${day ? "bg-white" : "bg-gray-50/50"}`}>
+                        {day && (
+                            <>
+                                <div className={`font-semibold mb-1 ${isToday(day) ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-800'}`}>{day.getDate()}</div>
+                                <div className="space-y-1">
+                                    {events.filter(e => new Date(e.startTime).toDateString() === day.toDateString()).map(event => (
+                                        <div key={event.id} className={`group relative p-1.5 rounded text-xs truncate font-medium border ${getEventColor(event.title)} ${event.status === 'cancelled' && 'opacity-50'}`} title={`${event.title} with ${event.participantName}`}>
+                                            <span className={`${event.status === 'cancelled' && 'line-through'}`}>{format(new Date(event.startTime), 'p')} {event.title}</span>
+                                            {new Date() < new Date(event.startTime) && event.status === 'scheduled' && (
+                                                <button 
+                                                    onClick={() => handleUpdateStatus(event.id, 'cancelled')} 
+                                                    className="absolute top-1 right-1 p-0.5 bg-white/50 rounded-full text-gray-500 opacity-0 group-hover:opacity-100 hover:bg-white hover:text-red-500 transition-opacity"
+                                                    aria-label="Cancel session"
+                                                >
+                                                    <X size={12} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                ))}
+            </div>
+            
+            <UpcomingEvents events={listEvents} onUpdateStatus={handleUpdateStatus} onReview={setReviewSession} />
+            
+            <AnimatePresence>
+                {showSessionModal && <NewSessionModal connections={connections} onClose={() => setShowSessionModal(false)} onSessionCreated={() => fetchEvents(currentDate)} />}
+                {reviewSession && <ReviewModal session={reviewSession} onClose={() => setReviewSession(null)} onReviewSubmitted={() => fetchEvents(currentDate)} />}
+            </AnimatePresence>
+        </div>
+    );
 }

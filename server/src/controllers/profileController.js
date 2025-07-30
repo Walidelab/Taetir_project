@@ -114,18 +114,21 @@ const uploadToCloudStorage = async (fileBuffer) => {
     return `https://cloud-storage.com/path/to/${Date.now()}.jpg`;
 };
 
+
 export const updateProfileController = async (req, res, next) => {
-    if (!req.user) {
-        return res.status(401).json({ message: "Not authenticated" });
+    if (!req.user || !req.user.id || !req.user.role) {
+        return res.status(401).json({ message: "Not authenticated or role not set" });
     }
 
     const userId = req.user.id;
-    // When using multer, text fields are in req.body and the file is in req.file
-    const { profileData, menteeProfileData } = req.body;
+    const userRole = req.user.role;
+    const { profileData, roleSpecificData } = req.body;
 
-    // The data from FormData comes in as strings, so we need to parse it back.
-    const parsedProfileData = JSON.parse(profileData);
-    const parsedMenteeProfileData = JSON.parse(menteeProfileData);
+    // --- FIX APPLIED HERE ---
+    // Provide a default empty JSON string ('{}') if the fields are missing from the request.
+    // This prevents the JSON.parse(undefined) error.
+    const parsedProfileData = JSON.parse(profileData || '{}');
+    const parsedRoleSpecificData = JSON.parse(roleSpecificData || '{}');
 
     const client = await db.connect();
 
@@ -134,12 +137,12 @@ export const updateProfileController = async (req, res, next) => {
 
         // --- Handle Avatar Upload ---
         if (req.file) {
-            
-            parsedProfileData.avatar_url = req.file.path; 
+            // If a new file was uploaded, its Cloudinary URL is in req.file.path
+            parsedProfileData.avatar_url = req.file.path;
         }
 
         // --- Update 'profiles' Table Dynamically ---
-        const profileFields = Object.keys(parsedProfileData).filter(key => parsedProfileData[key] !== null && parsedProfileData[key] !== undefined);
+        const profileFields = Object.keys(parsedProfileData).filter(key => parsedProfileData[key] != null);
         if (profileFields.length > 0) {
             const setClause = profileFields.map((field, index) => `"${field}" = $${index + 1}`).join(', ');
             const profileValues = profileFields.map(field => parsedProfileData[field]);
@@ -149,16 +152,20 @@ export const updateProfileController = async (req, res, next) => {
             );
         }
 
-        // --- Update 'mentee_profiles' Table Dynamically ---
-        const menteeFields = Object.keys(parsedMenteeProfileData).filter(key => parsedMenteeProfileData[key] !== null && parsedMenteeProfileData[key] !== undefined);
-        if (menteeFields.length > 0) {
+        // --- Update Role-Specific Table Dynamically ---
+        const roleSpecificFields = Object.keys(parsedRoleSpecificData).filter(key => parsedRoleSpecificData[key] != null);
+        if (roleSpecificFields.length > 0) {
             const profileRes = await client.query(`SELECT id FROM profiles WHERE user_id = $1`, [userId]);
             const profileId = profileRes.rows[0].id;
-            const setClause = menteeFields.map((field, index) => `"${field}" = $${index + 1}`).join(', ');
-            const menteeValues = menteeFields.map(field => parsedMenteeProfileData[field]);
+            
+            const tableName = userRole === 'mentor' ? 'mentor_profiles' : 'mentee_profiles';
+            
+            const setClause = roleSpecificFields.map((field, index) => `"${field}" = $${index + 1}`).join(', ');
+            const roleValues = roleSpecificFields.map(field => parsedRoleSpecificData[field]);
+            
             await client.query(
-                `UPDATE mentee_profiles SET ${setClause} WHERE profile_id = $${menteeValues.length + 1}`,
-                [...menteeValues, profileId]
+                `UPDATE ${tableName} SET ${setClause} WHERE profile_id = $${roleValues.length + 1}`,
+                [...roleValues, profileId]
             );
         }
         
@@ -173,3 +180,4 @@ export const updateProfileController = async (req, res, next) => {
         client.release();
     }
 };
+

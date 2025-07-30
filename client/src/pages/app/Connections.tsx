@@ -118,10 +118,10 @@ export default function MyConnections() {
   }[status] || 'bg-gray-100 text-gray-800');
 
   const stats = {
-      total: connections.length,
-      mentors: connections.filter(c => c.role === 'mentor' && c.status === 'accepted').length,
-      mentees: connections.filter(c => c.role === 'mentee' && c.status === 'accepted').length,
-      pending: connections.filter(c => c.detailedStatus === 'pending').length,
+    mentors: connections.filter(c => c.role === 'mentor' && c.status === 'accepted').length,
+    mentees: connections.filter(c => c.role === 'mentee' && c.status === 'accepted').length,
+    pending: connections.filter(c => c.detailedStatus === 'pending').length,
+    total: connections.filter( c=> c.detailedStatus !== 'requested' && c.detailedStatus !== 'pending').length  ,
   };
 
   return (

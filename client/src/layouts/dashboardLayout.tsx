@@ -86,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         <aside className={`fixed top-0 left-0 h-full w-64 bg-white text-gray-800 shadow-xl transform z-40 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-y-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             <div className="flex flex-col h-full">
                 <div className="flex items-center h-20 px-6 border-b">
-                    <h1 className="text-2xl font-bold text-blue-700">TAETIR</h1>
+                    <h1 className="text-4xl  font-black mx-auto text-blue-700">TAETIR</h1>
                 </div>
 
                 <nav className="flex-grow mt-6">

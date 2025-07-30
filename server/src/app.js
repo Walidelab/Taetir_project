@@ -13,6 +13,8 @@ import app2 from './routes/oauth.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import connectionRoutes from './routes/connection.routes.js';
 import converstionRoutes from './routes/messages.route.js';
+import sessionsRoutes from './routes/session.routes.js'
+import feedbackRoutes from './routes/feedback.routes.js'
 
 import './config/passport-setup.js'; 
 
@@ -49,5 +51,8 @@ app.use('/api', app2);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/conversations', converstionRoutes);
+app.use('/api/sessions' , sessionsRoutes);
+app.use('/api/feedbacks', feedbackRoutes);
+
 
 export default app;
