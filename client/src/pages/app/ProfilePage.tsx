@@ -202,7 +202,7 @@ const handleInputChange = (field: FormField, value: string): void => {
     .slice(0, 4);
 
   return (
-    <div className="h-screen lg:w-5xl md:w-2xl bg-gray-50 ">
+    <div className="h-screen lg:w-5xl md:w-2xl dark:bg-slate-800 bg-gray-50 ">
       <div className="mx-auto">
         <div className=" w-full">
           <div className="bg-gradient-to-r from-gray-700 via-blue-800 to-blue-600 rounded-lg p-8 text-center text-white">

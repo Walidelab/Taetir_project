@@ -25,7 +25,7 @@ import api from '@/utils/axios'
   
 
   return (
-    <div className="min-h-screen w-xl flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen w-xl flex items-center justify-center">
       <Card className='w-full mx-auto'>
         <CardHeader>
           <h1 className="bg-linear from-blue-900 to-blue-700 bg-clip-text text-3xl font-extrabold text-transparent text-center">
@@ -48,10 +48,11 @@ import api from '@/utils/axios'
           <div id="google-login" className="flex justify-center mb-2"></div>
           <div className="flex-grow h-px bg-gray-300" />
           <Link to="http://localhost:5000/api/auth/google" className="w-full">
-          <Button  className="w-full bg-white text-gray-800 hover:bg-gray-100">
+          <Button  className="w-full bg-white  text-gray- dark:bg-black/30 dark:text-gray-300 hover:bg-gray-100">
             <img src={googlesvg} width={18} alt="Google logo" />
             Sign up with Google
           </Button>
+
           </Link>
           <p className="text-sm text-gray-500">
             Don't have an account? 

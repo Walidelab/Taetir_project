@@ -62,9 +62,7 @@ export function AuthForm() {
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try{
       const { username ,email, password  } = data;
-      const { user, profile } = await signupUser(username, email, password);
-
-       login(user, profile);
+      const res = await signupUser(username, email, password)
 
       navigate("/choose-role");
     }catch (error : any) {
@@ -147,7 +145,7 @@ export function AuthForm() {
                 </FormItem>
             )}
             />
-        <Button type="submit">Submit</Button>
+        <Button type="submit" className='dark:bg-black/30 dark:text-gray-300'>Submit</Button>
         </div>
       </form>
       

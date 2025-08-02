@@ -33,7 +33,7 @@ const ActivityFeed = ({ activities }: { activities: any[] }) => {
                     {icon}
                 </div>
                 <div className="flex-grow">
-                    <p className="text-sm text-gray-700">{text}</p>
+                    <p className="text-sm dark:text-white text-gray-700">{text}</p>
                     <p className="text-xs text-gray-400 mt-1">{timeAgo(timestamp)}</p>
                 </div>
             </div>
@@ -41,14 +41,14 @@ const ActivityFeed = ({ activities }: { activities: any[] }) => {
     };
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm h-full">
-            <h3 className="text-lg font-bold text-gray-800 mb-6">Activity Feed</h3>
+        <div className="bg-white dark:bg-slate-700 p-6 rounded-2xl shadow-sm h-full">
+            <h3 className="text-lg font-bold dark:text-white text-gray-800 mb-6">Activity Feed</h3>
             {activities && activities.length > 0 ? (
                 <div className="space-y-6">
                     {activities.map(renderActivity)}
                 </div>
             ) : (
-                <p className="text-sm text-gray-500 text-center py-8">No recent activity to show.</p>
+                <p className="text-sm dark:text-white text-gray-500 text-center py-8">No recent activity to show.</p>
             )}
         </div>
     );

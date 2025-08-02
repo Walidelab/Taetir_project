@@ -39,6 +39,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, name, icon: Icon, onClick }) => {
     const match = useMatch({ path: to, end: true });
     const isActive = !!match;
 
+
     return (
         <li className="px-4">
             <NavLink
@@ -62,6 +63,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, name, icon: Icon, onClick }) => {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     const { user, profile, logout } = useAuth();
     const navigate = useNavigate();
+    
 
     const handleLogout = () => {
         logout();
@@ -77,30 +79,44 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         { to: '/feedbacks', name: 'Feedbacks', icon: IconStar },
     ];
 
+     const navMentor = [
+        { to: '/dashboard', name: 'Dashboard', icon: IconLayoutDashboard },
+        { to: '/connections', name: 'My Connections', icon: IconPlugConnected },
+        { to: '/messages', name: 'Messages', icon: IconMessageCircle },
+        { to: '/calendar', name: 'Calendar', icon: IconCalendarEvent },
+        { to: '/feedbacks', name: 'Feedbacks', icon: IconStar },
+    ];
+
     const settingsItems = [
         { to: '/profile', name: 'Profile', icon: IconUserCircle },
         { to: '/settings', name: 'Settings', icon: IconSettings },
     ];
 
     return (
-        <aside className={`fixed top-0 left-0 h-full w-64 bg-white text-gray-800 shadow-xl transform z-40 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-y-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside className={`fixed top-0 left-0 h-full w-64 bg-white  text-gray-800 dark:bg-slate-900 dark:text-white shadow-xl transform z-40 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-y-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             <div className="flex flex-col h-full">
                 <div className="flex items-center h-20 px-6 border-b">
-                    <h1 className="text-4xl  font-black mx-auto text-blue-700">TAETIR</h1>
+                    <h1 className="text-4xl dark:text-white  font-black mx-auto text-blue-700">TAETIR</h1>
                 </div>
 
                 <nav className="flex-grow mt-6">
                     <ul className='space-y-2'>
-                        {navItems.map((item) => (
-                            <NavItem key={item.name} {...item} onClick={() => {}} />
-                        ))}
+                        {user?.role === 'mentee'
+                            ? navItems.map((item: typeof navItems[number]) => (
+                                <NavItem key={item.name} {...item} onClick={() => {}} />
+                              ))
+                            : navMentor.map((item: typeof navMentor[number]) => (
+                                <NavItem key={item.name} {...item} onClick={() => {}} />
+                              ))
+                        }
                     </ul>
                     <hr className="my-6 border-gray-200" />
                     <ul className='space-y-2'>
-                        {settingsItems.map((item) => (
+                        {settingsItems.map((item: typeof settingsItems[number]) => (
                             <NavItem key={item.name} {...item} onClick={() => {}} />
                         ))}
                     </ul>
+                    
                 </nav>
 
                 <div className="p-4 border-t border-gray-200">
@@ -131,9 +147,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
 // --- Main Content Area Component ---
 const MainContent: React.FC<MainContentProps> = ({ toggleSidebar }) => {
     return (
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="flex-1  dark:bg-slate-900 overflow-y-auto bg-gray-50">
             {/* Header for mobile toggle */}
-            <div className="sticky top-0 bg-gray-50/80 backdrop-blur-sm z-10 p-4 border-b lg:hidden">
+            <div className="sticky top-0 dark:bg-slate-900 bg-gray-50/80 backdrop-blur-sm z-10 p-4 border-b lg:hidden">
                  <button
                     onClick={toggleSidebar}
                     className="p-2 rounded-md text-gray-600"
@@ -142,7 +158,7 @@ const MainContent: React.FC<MainContentProps> = ({ toggleSidebar }) => {
                     <IconMenu2 className="w-6 h-6" />
                 </button>
             </div>
-            <div className="p-4 md:p-8">
+            <div className="p-4   md:p-8">
                 <Outlet />
             </div>
         </main>

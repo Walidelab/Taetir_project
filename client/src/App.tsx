@@ -20,15 +20,16 @@ import MyConnections from './pages/app/Connections';
 import Calendar from './pages/app/Calendar';
 import Messages from './pages/app/Message';
 import Feedbacks from './pages/app/Feedback';
+import { useAuth } from './hooks/AuthContext';
 
 
-
-
-const SettingsPage = () => <div className="bg-white p-6 rounded-lg shadow-md"><h1>Settings</h1></div>;
 
 
 function App() {
+  const { user } = useAuth();
+  const role = user?.role ;
   return (
+    
     <Routes >
 
       <Route path="/" element={<Navigate to="/signin" />} />
@@ -44,13 +45,14 @@ function App() {
 
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/mentors" element={<FindMentors />} />
+        {role == 'mentee' && 
+        <Route path="/mentors" element={<FindMentors />} /> 
+        }
         <Route path="/connections" element={<MyConnections />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/feedbacks" element={<Feedbacks />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
     </Routes>

@@ -164,7 +164,7 @@ export const CompleteProfilePage: React.FC = () => {
     if (!role) return <div>Loading...</div>;
 
     return (
-        <div className="w-full bg-gray-50 flex items-center justify-center p-4 font-sans">
+        <div className="w-3xl rounded-2xl bg-gray-50 flex items-center justify-center p-4 font-sans">
             <div className="w-full max-w-2xl">
                 <div className="mb-8">
                     <h3 className="text-center text-lg font-semibold text-gray-700 mb-2">Step {step} of 2</h3>

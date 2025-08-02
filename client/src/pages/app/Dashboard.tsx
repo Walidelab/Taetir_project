@@ -8,7 +8,7 @@ import MotionCard from '@/components/common/MotionCard';
 import WelcomeBanner from '@/components/common/WelcomeBanner';
 import ActivityFeed from '@/components/common/ActivityFeed';
 import ActivityChart from '@/components/common/ActivityChart';
-
+import DashboardHeader from '@/components/common/DashboardHeader';
 
 
 interface DashboardStats {
@@ -76,41 +76,12 @@ const DashboardSkeleton = () => (
 
 
 
-const DashboardHeader = ({ user, profile , notificationCount }: { user: any, profile: any , notificationCount: number }) => (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 className="text-2xl font-bold text-gray-800">{getGreeting()}, {profile?.first_name || user?.username || 'Guest'}!</h1>
-            <p className="text-md text-gray-500">{getCurrentDate()}</p>
-        </div>
-        <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <button className="relative p-3 rounded-full bg-white shadow-sm hover:bg-gray-100 transition-colors">
-                <BellIcon className="w-6 h-6 text-gray-600" />
-                {notificationCount > 0 && (
-                    <span className="absolute top-0 right-0 flex h-5 w-5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-xs items-center justify-center">
-                            {notificationCount}
-                        </span>
-                    </span>
-                )}
-            </button>
-            <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden ring-2 ring-white shadow-sm">
-                {profile?.avatar_url ? 
-                    <img src={profile.avatar_url} alt="User Avatar" className="w-full h-full object-cover" /> :
-                    <span className="flex items-center justify-center h-full w-full bg-blue-500 text-white font-bold text-lg">
-                        {(profile?.first_name?.[0] || user?.username?.[0] || 'G').toUpperCase()}
-                    </span>
-                }
-            </div>
-        </div>
-    </div>
-);
 
 
 const StatCard = ({ title, value, change, icon }: { title: string; value: string | number; change: string, icon: React.ReactNode }) => (
-    <div className="bg-white p-5 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+    <div className=" bg-white dark:bg-slate-700 p-5 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
         <div className="flex justify-between items-start">
-            <div className="p-3 bg-blue-100 rounded-lg">
+            <div className="p-3 dark:bg-slate-700 bg-blue-100 rounded-lg">
                 {icon}
             </div>
             {change && parseInt(change) >= 0  ? (
@@ -127,8 +98,8 @@ const StatCard = ({ title, value, change, icon }: { title: string; value: string
         }
         </div>
         <div className="mt-4">
-            <p className="text-3xl font-bold text-gray-800">{value}</p>
-            <p className="text-sm text-gray-500">{title}</p>
+            <p className="text-3xl font-bold dark:text-white text-gray-800">{value}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-200">{title}</p>
         </div>
     </div>
 );
@@ -189,7 +160,7 @@ export default function DashboardPage() {
     console.log(stats)
 
     return (
-        <div className="min-h-screen font-sans">
+        <div className="  min-h-screen ">
             <MotionCard delay={0}>
                 <DashboardHeader user={user} profile={profile} notificationCount={notificationCount} />
             </MotionCard>
@@ -206,7 +177,7 @@ export default function DashboardPage() {
                                 title="Active Users" 
                                 value={stats?.activeConnections ?? 'N/A'} 
                                 change={`${stats?.connectionChangePercent ?? 0}%`}
-                                icon={<UsersIcon className="w-6 h-6 text-blue-600"/>} 
+                                icon={<UsersIcon className="w-6 h-6 dark:text-white text-blue-600"/>} 
                             />
                         </MotionCard>
                         <MotionCard delay={0.3}>
@@ -214,7 +185,7 @@ export default function DashboardPage() {
                                 title="Sessions This Month" 
                                 value={stats?.sessionsThisMonth ?? 'N/A'} 
                                 change={`${stats?.sessionChangePercent ?? 0}%`}
-                                icon={<CheckCircleIcon className="w-6 h-6 text-blue-600"/>} 
+                                icon={<CheckCircleIcon className="w-6 h-6 dark:text-white text-blue-600"/>} 
                             />
                         </MotionCard>
                         <MotionCard delay={0.4}>
@@ -222,7 +193,7 @@ export default function DashboardPage() {
                                 title="Avg. Rating" 
                                 value={stats?.averageRating ?? 'N/A'} 
                                 change={`${stats?.ratingChange ?? 0}`}
-                                icon={<StarIcon className="w-6 h-6 text-blue-600"/>} 
+                                icon={<StarIcon className="w-6 h-6 dark:text-white text-blue-600"/>} 
                             />
                         </MotionCard>
                     </div>

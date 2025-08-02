@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Star, Clock, MessageCircle, Calendar, MoreVertical, UserPlus, UserCheck, UserX } from 'lucide-react';
 import api from '@/utils/axios'; // Your configured axios instance
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom'; 
+import MotionCard from '@/components/common/MotionCard';
+import DashboardHeader from '@/components/common/DashboardHeader';// Import useNavigate
+import { useAuth } from '@/hooks/AuthContext';
 
 // --- Corrected Type Definition ---
 // This interface now matches all possible data structures from your backend API
@@ -35,16 +38,23 @@ const ConnectionItemSkeleton = () => (
 
 export default function MyConnections() {
   const [connections, setConnections] = useState<Connection[]>([]);
+  const [ notificationCount , setNotificationCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'mentors' | 'mentees' | 'pending'>('all');
   const [updatingId, setUpdatingId] = useState<number | null>(null); // To show loading on specific buttons
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); 
+  const { user , profile } = useAuth();
 
   const fetchConnections = async () => {
       setLoading(true);
       try {
-        const response = await api.get('/connections');
-        setConnections(response.data);
+        const [ConnectionResponse , notification ] = await Promise.all([
+          api.get('/connections').catch(()=> null),
+          api.get('/dashboard/unread-count').catch(() => null) 
+        ]);
+
+        if (ConnectionResponse) setConnections(ConnectionResponse.data);
+        if (notification) setNotificationCount(notification.data);
       } catch (error) {
         console.error("Failed to fetch connections:", error);
       } finally {
@@ -125,13 +135,13 @@ export default function MyConnections() {
   };
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">My Connections</h1>
-        <p className="text-gray-600">Manage your mentorship relationships and network.</p>
-      </div>
+    <div className=" space-y-6 font-sans">
+            
+      <MotionCard delay={0}>
+                <DashboardHeader user={user} profile={profile} notificationCount={notificationCount} />
+        </MotionCard>
 
+      <div className='flex flex-col gap-4'>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {loading ? Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />) : (
@@ -145,7 +155,7 @@ export default function MyConnections() {
       </div>
 
       {/* Tabs & List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-slate-700  rounded-xl shadow-sm border dark:border-none border-gray-100">
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             <TabButton id="all" label="All" count={stats.total} activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -163,8 +173,8 @@ export default function MyConnections() {
                 <div className="flex items-center space-x-4">
                   <img src={connection.avatar_url || `https://i.pravatar.cc/48?u=${connection.id}`} alt={`${connection.first_name} ${connection.last_name}`} className="w-12 h-12 rounded-full object-cover" />
                   <div>
-                    <h3 className="font-semibold text-gray-900">{connection.first_name} {connection.last_name}</h3>
-                    <p className="text-sm text-gray-600">{connection.title}</p>
+                    <h3 className="font-semibold dark:text-white text-gray-900">{connection.first_name} {connection.last_name}</h3>
+                    <p className="text-sm dark:text-gray-300 text-gray-600">{connection.title}</p>
                     <div className={`mt-2 flex items-center gap-2 px-2 py-1 text-xs rounded-full w-fit ${getStatusColor(connection.detailedStatus)}`}>
                         {getStatusIcon(connection.detailedStatus)}
                         <span className="font-medium">{getStatusText(connection.detailedStatus)}</span>
@@ -212,18 +222,19 @@ export default function MyConnections() {
         </div>
       </div>
     </div>
+    </div>
   );
 }
 
 // --- Helper Components ---
 const StatCard = ({ label, value, icon }: { label: string, value: number, icon: React.ReactNode }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white dark:bg-slate-700 dark:border-0 rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex items-center justify-between">
             <div>
-                <p className="text-sm font-medium text-gray-600">{label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+                <p className="text-sm font-medium dark:text-gray-200 text-gray-600">{label}</p>
+                <p className="text-3xl font-bold dark:text-white text-gray-900 mt-1">{value}</p>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="p-3 dark:bg-slate-700 bg-gray-50 rounded-lg">
                 {icon}
             </div>
         </div>
@@ -235,8 +246,8 @@ const TabButton = ({ id, label, count, activeTab, setActiveTab }: any) => (
         onClick={() => setActiveTab(id)}
         className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
             activeTab === id
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 dark:text-blue-300 text-blue-600'
+                : 'border-transparent text-gray-500 dark:text-white hover:text-gray-700 hover:border-gray-300'
         }`}
     >
         {label} <span className={`ml-1.5 px-2 py-0.5 rounded-full text-xs font-semibold ${activeTab === id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>{count}</span>

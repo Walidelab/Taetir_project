@@ -116,7 +116,7 @@ export function SignInForm() {
         </a>
 
         </div>
-        <Button type="submit">Submit</Button>
+        <Button type="submit" className='dark:bg-black/30 dark:text-gray-300'>Submit</Button>
         </div>
       </form>
       

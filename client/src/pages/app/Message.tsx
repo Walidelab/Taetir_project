@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/AuthContext';
 import api from '@/utils/axios';
 import io, { Socket } from 'socket.io-client';
 import { format, isToday, isYesterday } from 'date-fns';
+import MotionCard from '@/components/common/MotionCard';
+import DashboardHeader from '@/components/common/DashboardHeader';
 
 // --- Type Definitions ---
 interface Conversation {
@@ -28,7 +30,7 @@ interface Message {
 
 // --- Main Component ---
 export default function MessagesPage() {
-    const { user } = useAuth();
+    const { user , profile } = useAuth();
     const socket = useRef<Socket | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +41,7 @@ export default function MessagesPage() {
     const [onlineUsers, setOnlineUsers] = useState<number[]>([]);
     const [loadingConversations, setLoadingConversations] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
+    const [notificationCount, setNotificationCount ] = useState<number>(0)
 
     // --- Socket.io and Data Fetching Effects ---
     useEffect(() => {
@@ -63,8 +66,13 @@ export default function MessagesPage() {
 
     const fetchConversations = async () => {
         try {
-            const response = await api.get('/conversations/');
-            setConversations(response.data);
+             const [response , notification] = await Promise.all([
+
+          api.get('/conversations/').catch(()=>null),
+          api.get('/dashboard/unread-count').catch(() => null) 
+        ])
+        if ( response ) setConversations(response.data);
+        if ( notification) setNotificationCount(notification.data);
         } catch (error) {
             console.error("Failed to fetch conversations:", error);
         } finally {
@@ -146,10 +154,16 @@ export default function MessagesPage() {
     }));
 
     return (
-        <div className="h-[calc(100vh-120px)] flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden font-sans">
-            <div className="w-full md:w-[350px] border-r border-gray-200 flex flex-col">
+        <div>
+            <MotionCard delay={0}>
+                <DashboardHeader user={user} profile={profile} notificationCount={notificationCount} />
+        </MotionCard>
+
+        
+        <div className="h-[calc(100vh-120px)] flex dark:bg-slate-800 dark:border-0 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden font-sans">
+            <div className="w-full md:w-[350px] border-r dark:border-gray-600 border-gray-200 flex flex-col">
                 <div className="p-4 border-b">
-                    <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+                    <h1 className="text-xl font-bold dark:text-white text-gray-900">Messages</h1>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                     {loadingConversations ? (
@@ -168,7 +182,7 @@ export default function MessagesPage() {
             </div>
 
             {selectedConversation ? (
-                <div className="flex-1 flex flex-col bg-gray-50">
+                <div className="flex-1 flex flex-col dark:bg-slate-800 bg-gray-50">
                     <ChatHeader conversation={updatedConversations.find(c => c.connectionId === selectedConversation.connectionId)} />
                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
                         {loadingMessages ? <div>Loading messages...</div> : messages.map((msg) => (
@@ -191,6 +205,7 @@ export default function MessagesPage() {
                     </div>
                 </div>
             )}
+        </div>
         </div>
     );
 }
@@ -216,18 +231,18 @@ const ConversationSkeleton = () => (
 );
 
 const ConversationItem = ({ conversation, isSelected, onClick }: { conversation: Conversation, isSelected: boolean, onClick: () => void }) => (
-    <div onClick={onClick} className={`p-4 flex items-start space-x-4 cursor-pointer border-b border-gray-100 transition-colors ${isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'}`}>
+    <div onClick={onClick} className={`p-4 flex items-start space-x-4 cursor-pointer border-b dark:border-gray-700 border-gray-100 transition-colors ${isSelected ? 'dark:bg-slate-900 bg-blue-50' : 'dark:hover:bg-gray-950 hover:bg-gray-50'}`}>
         <div className="relative flex-shrink-0">
             <img src={conversation.participantAvatar || `https://i.pravatar.cc/48?u=${conversation.participantId}`} alt={conversation.participantName} className="w-12 h-12 rounded-full object-cover" />
             {conversation.isOnline && <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white"></div>}
         </div>
         <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center">
-                <p className="font-semibold text-gray-800 truncate">{conversation.participantName}</p>
-                <p className="text-xs text-gray-400 flex-shrink-0">{formatTimestamp(conversation.timestamp)}</p>
+                <p className="font-semibold dark:text-white text-gray-800 truncate">{conversation.participantName}</p>
+                <p className="text-xs dark:text-gray-200 text-gray-400 flex-shrink-0">{formatTimestamp(conversation.timestamp)}</p>
             </div>
             <div className="flex justify-between items-center mt-1">
-                <p className={`text-sm truncate ${Number(conversation.unreadCount) > 0 ? 'text-gray-800 font-semibold' : 'text-gray-500'}`}>{conversation.lastMessage || 'No messages yet'}</p>
+                <p className={`text-sm truncate dark:text-gray-200 ${Number(conversation.unreadCount) > 0 ? 'text-gray-800  font-semibold' : 'text-gray-500'}`}>{conversation.lastMessage || 'No messages yet'}</p>
                 {Number(conversation.unreadCount) > 0 && <div className="w-5 h-5 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">{conversation.unreadCount}</div>}
             </div>
         </div>
@@ -237,14 +252,14 @@ const ConversationItem = ({ conversation, isSelected, onClick }: { conversation:
 const ChatHeader = ({ conversation }: { conversation?: Conversation }) => {
     if (!conversation) return null;
     return (
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white shadow-sm">
+        <div className="p-4 border-b dark:bg-slate-800 border-gray-200 flex items-center justify-between bg-white shadow-sm">
             <div className="flex items-center space-x-4">
                 <div className="relative">
                     <img src={conversation.participantAvatar || `https://i.pravatar.cc/48?u=${conversation.participantId}`} alt={conversation.participantName} className="w-10 h-10 rounded-full object-cover" />
                     {conversation.isOnline && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>}
                 </div>
                 <div>
-                    <h3 className="font-semibold text-gray-900">{conversation.participantName}</h3>
+                    <h3 className="font-semibold dark:text-white text-gray-900">{conversation.participantName}</h3>
                     <p className={`text-sm ${conversation.isOnline ? 'text-green-600' : 'text-gray-500'}`}>{conversation.isOnline ? "Online" : "Offline"}</p>
                 </div>
             </div>
@@ -259,15 +274,15 @@ const ChatHeader = ({ conversation }: { conversation?: Conversation }) => {
 const MessageBubble = ({ message, isMe }: { message: Message, isMe: boolean }) => (
     <div className={`flex items-end gap-3 ${isMe ? 'justify-end' : 'justify-start'}`}>
         {!isMe && <img src={message.senderAvatar || `https://i.pravatar.cc/48?u=${message.senderId}`} alt={message.senderName} className="w-8 h-8 rounded-full object-cover self-start" />}
-        <div className={`max-w-lg p-3 rounded-2xl ${isMe ? 'bg-blue-600 text-white rounded-br-lg' : 'bg-white text-gray-800 rounded-bl-lg shadow-sm'}`}>
+        <div className={`max-w-lg p-3 rounded-2xl ${isMe ? 'bg-blue-600 text-white rounded-br-lg' : 'bg-white dark:bg-slate-600 dark:text-white text-gray-800 rounded-bl-lg shadow-sm'}`}>
             <p className="text-sm">{message.content}</p>
-            <p className={`text-xs mt-1.5 ${isMe ? 'text-blue-100' : 'text-gray-500'} text-right`}>{format(new Date(message.timestamp), 'p')}</p>
+            <p className={`text-xs mt-1.5 ${isMe ? 'text-blue-100' : 'dark:text-white text-gray-500'} text-right`}>{format(new Date(message.timestamp), 'p')}</p>
         </div>
     </div>
 );
 
 const MessageInput = ({ value, onChange, onSend }: { value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, onSend: () => void }) => (
-    <div className="p-4 border-t border-gray-200 bg-white">
+    <div className="p-4 border-t dark:bg-slate-800 dark:border-gray-600 border-gray-200 bg-white">
         <div className="flex items-center space-x-3">
             <input
                 type="text"
@@ -275,7 +290,7 @@ const MessageInput = ({ value, onChange, onSend }: { value: string, onChange: (e
                 value={value}
                 onChange={onChange}
                 onKeyPress={(e) => e.key === "Enter" && onSend()}
-                className="w-full px-4 py-2 bg-gray-100 border-transparent rounded-full focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                className="w-full px-4 py-2 dark:text-white dark:bg-slate-600 bg-gray-100 border-transparent rounded-full focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
             />
             <button onClick={onSend} className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm">
                 <Send size={20} />

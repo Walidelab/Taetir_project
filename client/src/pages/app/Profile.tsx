@@ -59,7 +59,7 @@ const TagInput = ({ value, onChange, placeholder }: { value: string[], onChange:
         onChange(value.filter(tag => tag !== tagToRemove));
     };
     return (
-        <div className="flex flex-wrap gap-2 p-3 border-2 border-gray-200 rounded-xl bg-gray-50 focus-within:border-blue-300 focus-within:bg-white transition-all duration-200">
+        <div className="flex flex-wrap gap-2 p-3 border-2 dark:bg-slate-800 border-gray-200 rounded-xl bg-gray-50 focus-within:border-blue-300 focus-within:bg-white transition-all duration-200">
             <AnimatePresence>
                 {value.map(tag => (
                     <motion.div 
@@ -98,7 +98,7 @@ const ProfileHeader = ({ isEditing, onEdit, onSave, onCancel, isSaving }: { isEd
         animate={{ opacity: 1, y: 0 }} 
         transition={{ duration: 0.6, ease: "easeOut" }}
     >
-        <div className="bg-gradient-to-r from-white to-blue-50 rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden">
+        <div className="bg-gradient-to-r dark:bg-slate-800 from-white to-blue-50 rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -translate-y-16 translate-x-16 opacity-30"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-200 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
             <div className="relative z-10">
@@ -181,7 +181,7 @@ const ProfileInfoCard = ({ isEditing, data, setData }: { isEditing: boolean, dat
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden"
+            className="bg-white  dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden"
         >
             <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full -translate-y-10 translate-x-10 opacity-50"></div>
             <div className="relative z-10">
@@ -538,7 +538,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6 font-sans">
+        <div className="min-h-screen bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 from-gray-50 to-blue-50 p-6 font-sans">
             <div className="max-w-7xl mx-auto space-y-8">
                 <ProfileHeader 
                     isEditing={isEditing} 

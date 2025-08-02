@@ -22,7 +22,7 @@ const SignupPage = () => {
 
 
   return (
-    <div className="min-h-screen w-xl flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen w-xl flex items-center justify-center">
       <Card className='w-full mx-auto'>
         <CardHeader>
           <h1 className="bg-linear from-blue-900 to-blue-700 bg-clip-text text-3xl font-extrabold text-transparent text-center">

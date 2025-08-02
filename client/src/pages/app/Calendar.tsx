@@ -87,7 +87,7 @@ const NewSessionModal = ({ connections, onClose, onSessionCreated }: { connectio
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-xl shadow-2xl w-full max-w-lg"
+                className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg"
             >
                 <form onSubmit={handleSubmit}>
                     <div className="p-6 border-b">
@@ -198,7 +198,7 @@ const UpcomingEvents = ({ events, onUpdateStatus, onReview }: { events: Calendar
     const now = new Date();
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming & Recent Events</h3>
             <div className="space-y-4">
                 {events.length > 0 ? events.map(event => {
@@ -322,7 +322,7 @@ export default function Calendar() {
 
     return (
         <div className="space-y-6 font-sans">
-            <div className="bg-white rounded-2xl shadow-sm border p-6 flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border p-6 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">My Calendar</h1>
                     <p className="text-gray-500">Track and schedule your mentorship sessions.</p>
@@ -332,7 +332,7 @@ export default function Calendar() {
                 </button>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border p-4 flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigateMonth("prev")} className="p-2 hover:bg-gray-100 rounded-lg"><ChevronLeft size={20} /></button>
                     <h2 className="text-xl font-semibold text-gray-800 w-48 text-center">{format(currentDate, 'MMMM yyyy')}</h2>
@@ -345,7 +345,7 @@ export default function Calendar() {
                     <div key={day} className="text-center text-gray-500 font-medium py-2">{day}</div>
                 ))}
                 {days.map((day, index) => (
-                    <div key={index} className={`min-h-[120px] p-2 border rounded-lg ${day ? "bg-white" : "bg-gray-50/50"}`}>
+                    <div key={index} className={`min-h-[120px] p-2 border rounded-lg ${day ? "dark:bg-slate-800 bg-white" : "bg-gray-500/50"}`}>
                         {day && (
                             <>
                                 <div className={`font-semibold mb-1 ${isToday(day) ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-800'}`}>{day.getDate()}</div>

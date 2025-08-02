@@ -93,9 +93,9 @@ export default function Feedbacks() {
 
     return (
         <div className="space-y-6 font-sans">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Feedbacks</h1>
-                <p className="text-gray-600">View and manage session feedback and reviews.</p>
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6">
+                <h1 className="text-2xl font-bold dark:text-white text-gray-900 mb-2">Feedbacks</h1>
+                <p className="dark:text-white text-gray-600">View and manage session feedback and reviews.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -106,16 +106,16 @@ export default function Feedbacks() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="lg:col-span-2 dark:bg-slate-800 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Recent Feedback</h3>
+                        <h3 className="text-lg font-semibold dark:text-white text-gray-900">Recent Feedback</h3>
                         <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
                             {(['all', 'given', 'received'] as const).map((filterOption) => (
                                 <button
                                     key={filterOption}
                                     onClick={() => setFilter(filterOption)}
                                     className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                                        filter === filterOption ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-600 hover:bg-white/50'
+                                        filter === filterOption ? 'dark:bg-slate-800 bg-white text-blue-700 shadow-sm' : 'text-gray-600 hover:bg-white/50'
                                     }`}
                                 >
                                     {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
@@ -134,26 +134,26 @@ export default function Feedbacks() {
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div>
-                                                    <h4 className="font-semibold text-gray-900">{feedback.participantName}</h4>
-                                                    <p className="text-sm text-gray-600">{feedback.sessionTitle}</p>
+                                                    <h4 className="font-semibold dark:text-white dark:text-white text-gray-900">{feedback.participantName}</h4>
+                                                    <p className="text-sm dark:text-white text-gray-600">{feedback.sessionTitle}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="flex items-center space-x-1 mb-1">{renderStars(feedback.rating)}</div>
-                                                    <p className="text-sm text-gray-500">{format(new Date(feedback.date), 'MMM d, yyyy')}</p>
+                                                    <p className="text-sm dark:text-white text-gray-500">{format(new Date(feedback.date), 'MMM d, yyyy')}</p>
                                                 </div>
                                             </div>
-                                            <p className="text-gray-700">{feedback.comment}</p>
+                                            <p className="dark:text-white text-gray-700">{feedback.comment}</p>
                                         </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <p className="text-center py-10 text-gray-500">No feedback to display for this filter.</p>
+                            <p className="text-center py-10 dark:text-white text-gray-500">No feedback to display for this filter.</p>
                         )}
                     </div>
                 </div>
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Rating Distribution</h3>
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 className="text-lg font-semibold dark:text-white dark:text-white text-gray-900 mb-4">Rating Distribution</h3>
                     <p className="text-sm text-gray-500 mb-4">Based on feedback you've received.</p>
                     <div className="space-y-3">
                         {ratingDistribution.map(({ rating, count, percentage }) => (
@@ -180,11 +180,11 @@ export default function Feedbacks() {
 }
 
 const StatCard = ({ label, value, icon }: { label: string, value: string | number, icon: React.ReactNode }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex items-center justify-between">
             <div>
                 <p className="text-sm font-medium text-gray-600">{label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+                <p className="text-3xl font-bold dark:text-white text-gray-900 mt-1">{value}</p>
             </div>
             <div className="p-3 bg-gray-50 rounded-lg">{icon}</div>
         </div>

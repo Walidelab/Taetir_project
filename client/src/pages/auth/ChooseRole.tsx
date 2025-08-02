@@ -30,17 +30,17 @@ const ChooseRole = () => {
             <CardTitle className="text-center text-2xl font-bold">Choose Your Role</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center gap-4">
-            <Button variant="outline" className={`w-42 h-32 flex flex-col hover:bg-gray-50 ${role === 'mentor' ? 'bg-blue-800 text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentor')}>
+            <Button variant="outline" className={`w-42 h-32 flex flex-col hover:bg-gray-50 ${role === 'mentor' ? 'bg-blue-800 dark:bg-blue-900  text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentor')}>
                 <IconChalkboardTeacher className="mr-2" size={24} />
                 Mentor
             </Button>
-            <Button variant="outline" className={`w-42 h-32 flex flex-col hover:bg-gray-50 ${role === 'mentee' ? 'bg-blue-800 text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentee')}>
+            <Button variant="outline" className={`w-42 h-32 flex flex-col hover:bg-gray-50 ${role === 'mentee' ? 'bg-blue-800 dark:bg-blue-900  text-white hover:bg-blue-900' : ''}`} onClick={() => setRole('mentee')}>
                 <IconSchool className="mr-2" size={24} />
                 Mentee
             </Button>
         </CardContent>
         <CardFooter className="text-center flex justify-center">
-            <Button onClick={submitRole}> Let's Start The Journey</Button>
+            <Button onClick={submitRole} className='dark:bg-blue-900 dark:text-white'> Let's Start The Journey</Button>
         </CardFooter>
     </Card>
   )
