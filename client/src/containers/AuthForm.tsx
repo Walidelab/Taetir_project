@@ -64,7 +64,7 @@ export function AuthForm() {
       const { username ,email, password  } = data;
       const res = await signupUser(username, email, password)
 
-      navigate("/choose-role");
+      navigate("/signin");
     }catch (error : any) {
       console.error("Login failed:", error);
       Error(error.response?.data?.message || "Login failed");

@@ -1,16 +1,13 @@
+
 import bcrypt from 'bcrypt';
-import { createClient } from 'redis';
-
-const client = createClient();
-
-client.on('error', err => console.log('Redis Client Error', err));
-
-await client.connect();
+import redisClient from '../config/redis.js';
 
 export const StoreOTP = async (email, otp) => { 
     try {
         const hashedOtp = await bcrypt.hash(otp, 10);
-        await client.set(email, hashedOtp, 'EX', 600); 
+        
+        await redisClient.set(email, hashedOtp, { EX: 600 }); 
+        
         return true;
     } catch (error) {
         console.error("Error storing OTP:", error);
@@ -18,17 +15,22 @@ export const StoreOTP = async (email, otp) => {
     }
 }
 
+
 export const VerifyOTP = async (email, otp) => {
     try {
-        const storedOtp = await client.get(email);
-        if (!storedOtp) {
+        const storedOtpHash = await redisClient.get(email);
+        
+        if (!storedOtpHash) {
             return false; 
         }
-        const isMatch = await bcrypt.compare(otp, storedOtp);
+
+        const isMatch = await bcrypt.compare(otp, storedOtpHash);
+        
         if (isMatch) {
-            await client.del(email); 
+            await redisClient.del(email); 
             return true;
         }
+
         return false; 
     } catch (error) {
         console.error("Error verifying OTP:", error);

@@ -15,26 +15,32 @@ const io = new Server(httpServer, {
     credentials: true
   }
 });
-
 const onlineUsers = new Map();
 
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
   socket.on('add-user', (userId) => {
+    for (let [id, sId] of onlineUsers.entries()) {
+      if (id === userId && sId !== socket.id) {
+        onlineUsers.delete(id);
+        break;
+      }
+    }
     onlineUsers.set(userId, socket.id);
+    console.log(`User ${userId} is online with socket ID: ${onlineUsers.get(userId)}`);
     io.emit('online-users', Array.from(onlineUsers.keys()));
   });
 
   socket.on('send-message', (data) => {
-    const { to, from, content } = data;
+    const { to, from, content, connectionId } = data;
     const recipientSocketId = onlineUsers.get(to);
-    
-
+    console.log(`Message from ${from} to ${to}: ${content}`);
     if (recipientSocketId) {
       io.to(recipientSocketId).emit('receive-message', {
         from,
         content,
+        connectionId,
         timestamp: new Date().toISOString()
       });
     }

@@ -6,14 +6,20 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  background-color: aliceblue;
 }
 
 @media ( prefers-color-scheme: dark){
-  body {
+  #root {
     background-color: #1f1f20;
   }
 }
+
+@media ( prefers-color-scheme: light){
+  #root {
+    background-color: #f4f4f5;
+  }
+}
+
 
 
 

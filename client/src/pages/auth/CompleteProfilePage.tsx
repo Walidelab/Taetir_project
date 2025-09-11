@@ -124,7 +124,7 @@ export const CompleteProfilePage: React.FC = () => {
     const prevStep = () => setStep(prev => prev - 1);
 
     const handleSubmit = async () => {
-        if (!user) return;
+        if (!user && !location.state?.user) return;
 
         const profileData = {
             first_name: formData.first_name, last_name: formData.last_name, bio: formData.bio,
@@ -142,7 +142,7 @@ export const CompleteProfilePage: React.FC = () => {
         try {
             const res = await completeUserProfile({ role, profileData, roleSpecificData });
             if ( res){
-                await refetchUser();
+                refetchUser();
                 navigate('/dashboard');
             }
         } catch (error) {

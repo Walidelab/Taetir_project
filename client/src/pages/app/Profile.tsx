@@ -67,7 +67,7 @@ const TagInput = ({ value, onChange, placeholder }: { value: string[], onChange:
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full shadow-sm"
+                        className="flex items-center dark:bg-slate-800 bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full shadow-sm"
                     >
                         {tag}
                         <button 
@@ -86,7 +86,7 @@ const TagInput = ({ value, onChange, placeholder }: { value: string[], onChange:
                 onChange={(e) => setInputValue(e.target.value)} 
                 onKeyDown={handleKeyDown} 
                 placeholder={placeholder} 
-                className="flex-grow p-1 outline-none bg-transparent min-w-32 text-gray-700 placeholder-gray-400" 
+                className="flex-grow p-1 outline-none bg-transparent min-w-32 text-gray-700 dark:text-white placeholder-gray-400" 
             />
         </div>
     );
@@ -98,14 +98,14 @@ const ProfileHeader = ({ isEditing, onEdit, onSave, onCancel, isSaving }: { isEd
         animate={{ opacity: 1, y: 0 }} 
         transition={{ duration: 0.6, ease: "easeOut" }}
     >
-        <div className="bg-gradient-to-r dark:bg-slate-800 from-white to-blue-50 rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -translate-y-16 translate-x-16 opacity-30"></div>
+        <div className="bg-gradient-to-r dark:from-slate-800 dark:to-slate-900 dark:text-white from-white to-blue-50 rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32  bg-blue-100 rounded-full -translate-y-16 translate-x-16 opacity-30"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-200 rounded-full translate-y-12 -translate-x-12 opacity-20"></div>
             <div className="relative z-10">
                 <div className="flex items-center justify-between">
                     <div>
                         <motion.h1 
-                            className="text-3xl font-bold text-gray-900 mb-3"
+                            className="text-3xl font-bold dark:text-white text-gray-900 mb-3"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.2 }}
@@ -113,7 +113,7 @@ const ProfileHeader = ({ isEditing, onEdit, onSave, onCancel, isSaving }: { isEd
                             My Profile
                         </motion.h1>
                         <motion.p 
-                            className="text-gray-600 text-lg"
+                            className="text-gray-600 dark:text-gray-300 text-lg"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.3 }}
@@ -138,7 +138,7 @@ const ProfileHeader = ({ isEditing, onEdit, onSave, onCancel, isSaving }: { isEd
                             <div className="flex space-x-3">
                                 <button 
                                     onClick={onCancel} 
-                                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold" 
+                                    className="px-6 py-3 border-2 dark:text-gray-300 border-gray-300 text-gray-700 dark:text-white rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold" 
                                     disabled={isSaving}
                                 >
                                     Cancel
@@ -183,11 +183,11 @@ const ProfileInfoCard = ({ isEditing, data, setData }: { isEditing: boolean, dat
             transition={{ duration: 0.5, delay: 0.1 }}
             className="bg-white  dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 p-8 relative overflow-hidden"
         >
-            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full -translate-y-10 translate-x-10 opacity-50"></div>
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br dark:from-gray-800 from-blue-100 to-blue-200 rounded-full -translate-y-10 translate-x-10 opacity-50"></div>
             <div className="relative z-10">
                 <div className="flex items-start space-x-8">
                     <div className="relative group">
-                        <div className="w-28 h-28 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-lg ring-4 ring-white">
+                        <div className="w-28 h-28 rounded-2xl overflow-hidden bg-gradient-to-br dark:from-gray-800 dark:to-slate-900  from-blue-100 to-blue-200 flex items-center justify-center shadow-lg ring-4 ring-white">
                             {data.avatar_url ? (
                                 <img src={data.avatar_url} alt={name} className="w-full h-full object-cover" />
                             ) : (
@@ -213,57 +213,57 @@ const ProfileInfoCard = ({ isEditing, data, setData }: { isEditing: boolean, dat
                             <div className="space-y-4">
                                 <div className="flex gap-4">
                                     <div className="flex-1">
-                                        <label className="text-sm font-medium text-gray-600 mb-1 block">First Name</label>
+                                        <label className="text-sm font-medium dark:text-gray-300 text-gray-600 mb-1 block">First Name</label>
                                         <input 
                                             type="text" 
                                             value={data.first_name} 
                                             onChange={(e) => setData({ ...data, first_name: e.target.value })} 
                                             placeholder="First Name" 
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
+                                            className="w-full dark:text-white px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
                                         />
                                     </div>
                                     <div className="flex-1">
-                                        <label className="text-sm font-medium text-gray-600 mb-1 block">Last Name</label>
+                                        <label className="text-sm font-medium  dark:text-gray-300 text-gray-600 mb-1 block">Last Name</label>
                                         <input 
                                             type="text" 
                                             value={data.last_name} 
                                             onChange={(e) => setData({ ...data, last_name: e.target.value })} 
                                             placeholder="Last Name" 
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
+                                            className="w-full dark:text-white px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600 mb-1 block">Title</label>
+                                    <label className="text-sm font-medium dark:text-gray-300 text-gray-600 mb-1 block">Title</label>
                                     <input 
                                         type="text" 
                                         value={data.title} 
                                         onChange={(e) => setData({ ...data, title: e.target.value })} 
                                         placeholder="Your Title" 
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
+                                        className="w-full dark:text-white px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600 mb-1 block">Location</label>
+                                    <label className="text-sm font-medium dark:text-gray-300 text-gray-600 mb-1 block">Location</label>
                                     <input 
                                         type="text" 
                                         value={data.location} 
                                         onChange={(e) => setData({ ...data, location: e.target.value })} 
                                         placeholder="Location" 
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
+                                        className="w-full dark:text-white px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
                                     />
                                 </div>
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                <h2 className="text-3xl font-bold text-gray-900">{name}</h2>
+                                <h2 className="text-3xl font-bold dark:text-white text-gray-900">{name}</h2>
                                 <div className="flex items-center space-x-2">
                                     <Briefcase size={18} className="text-blue-600" />
-                                    <p className="text-xl text-gray-700 font-medium">{data.title || 'No title set'}</p>
+                                    <p className="text-xl dark:text-gray-300 dae text-gray-700  font-medium">{data.title || 'No title set'}</p>
                                 </div>
-                                <div className="flex items-center space-x-2 text-gray-500">
+                                <div className="flex items-center space-x-2 dark:text-white text-gray-500">
                                     <MapPin size={16} className="text-blue-500" />
-                                    <span className="text-base">{data.location || 'No location set'}</span>
+                                    <span className="text-base dark:text-gray-300">{data.location || 'No location set'}</span>
                                 </div>
                             </div>
                         )}
@@ -279,11 +279,11 @@ const ProfileSectionCard = ({ title, children, icon, delay = 0 }: { title: strin
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay }}
-        className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300"
+        className="bg-white dark:bg-slate-800 dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300"
     >
         <div className="flex items-center space-x-3 mb-6">
             {icon && <div className="text-blue-600">{icon}</div>}
-            <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+            <h3 className="text-xl font-bold dark:text-white text-gray-900">{title}</h3>
         </div>
         {children}
     </motion.div>
@@ -310,7 +310,7 @@ const MenteeProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
     <ProfileSectionCard title="My Learning Journey" icon={<Target size={24} />} delay={0.3}>
         <div className="space-y-6">
             <div>
-                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
+                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white mb-3">
                     <BookOpen size={16} className="text-blue-600" />
                     <span>Learning Objectives</span>
                 </label>
@@ -318,17 +318,17 @@ const MenteeProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
                     <textarea 
                         value={data.learning_objectives} 
                         onChange={(e) => setData({ ...data, learning_objectives: e.target.value })} 
-                        className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200 resize-none" 
+                        className="w-full p-4 border-2 dark:text-white border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200 resize-none" 
                         rows={4}
                         placeholder="Describe your learning goals..."
                     />
                 ) : (
-                    <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl">{data.learning_objectives || 'Not set'}</p>
+                    <p className="text-gray-700  dark:bg-slate-700 dark:text-gray-300 leading-relaxed bg-gray-50 p-4 rounded-xl">{data.learning_objectives || 'Not set'}</p>
                 )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white mb-3">
                         <Star size={16} className="text-blue-600" />
                         <span>Experience Level</span>
                     </label>
@@ -337,15 +337,15 @@ const MenteeProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
                             type="text" 
                             value={data.experience_level} 
                             onChange={(e) => setData({ ...data, experience_level: e.target.value })} 
-                            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
+                            className="w-full p-3 border-2 dark:text-white border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
                             placeholder="e.g., Beginner, Intermediate"
                         />
                     ) : (
-                        <p className="text-gray-900 font-medium bg-blue-50 p-3 rounded-xl">{data.experience_level || 'Not set'}</p>
+                        <p className="text-gray-900 font-medium dark:bg-slate-700 dark:text-gray-300 bg-blue-50 p-3 rounded-xl">{data.experience_level || 'Not set'}</p>
                     )}
                 </div>
                 <div>
-                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white mb-3">
                         <GraduationCap size={16} className="text-blue-600" />
                         <span>Education</span>
                     </label>
@@ -354,11 +354,11 @@ const MenteeProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
                             type="text" 
                             value={data.education} 
                             onChange={(e) => setData({ ...data, education: e.target.value })} 
-                            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
+                            className="w-full p-3 border-2 dark:text-white border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
                             placeholder="Your education background"
                         />
                     ) : (
-                        <p className="text-gray-900 font-medium bg-blue-50 p-3 rounded-xl">{data.education || 'Not set'}</p>
+                        <p className="text-gray-900 font-medium dark:bg-slate-700 dark:text-gray-300 bg-blue-50 p-3 rounded-xl">{data.education || 'Not set'}</p>
                     )}
                 </div>
             </div>
@@ -370,7 +370,7 @@ const MentorProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
     <ProfileSectionCard title="My Mentoring Details" icon={<Users size={24} />} delay={0.3}>
         <div className="space-y-6">
             <div>
-                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
+                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white mb-3">
                     <Briefcase size={16} className="text-blue-600" />
                     <span>Professional Experience</span>
                 </label>
@@ -378,16 +378,16 @@ const MentorProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
                     <textarea 
                         value={data.professional_experience} 
                         onChange={(e) => setData({ ...data, professional_experience: e.target.value })} 
-                        className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200 resize-none" 
+                        className="w-full p-4 border-2 dark:text-white border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200 resize-none" 
                         rows={4}
                         placeholder="Describe your professional background..."
                     />
                 ) : (
-                    <p className="text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl">{data.professional_experience || 'Not set'}</p>
+                    <p className="text-gray-700 dark:text-white leading-relaxed dark:bg-slate-700 bg-gray-50 p-4 rounded-xl">{data.professional_experience || 'Not set'}</p>
                 )}
             </div>
             <div>
-                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
+                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white mb-3">
                     <Building size={16} className="text-blue-600" />
                     <span>Company</span>
                 </label>
@@ -396,15 +396,15 @@ const MentorProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
                         type="text" 
                         value={data.company} 
                         onChange={(e) => setData({ ...data, company: e.target.value })} 
-                        className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
+                        className="w-full p-3 border-2 dark:text-white border-gray-200 rounded-xl focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all duration-200" 
                         placeholder="Your current company"
                     />
                 ) : (
-                    <p className="text-gray-900 font-semibold text-lg bg-blue-50 p-3 rounded-xl">{data.company || 'Not set'}</p>
+                    <p className="text-gray-900 font-semibold text-lg dark:bg-slate-700 bg-blue-50 p-3 rounded-xl">{data.company || 'Not set'}</p>
                 )}
             </div>
             <div>
-                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
+                <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-white mb-3">
                     <Zap size={16} className="text-blue-600" />
                     <span>Skills & Expertise</span>
                 </label>
@@ -422,7 +422,7 @@ const MentorProfileSection = ({ isEditing, data, setData }: { isEditing: boolean
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 rounded-xl text-sm font-medium shadow-sm hover:shadow-md transition-shadow duration-200"
+                                className="px-4 py-2 bg-gradient-to-r dark:from-slate-800 dark:to-slate-900 from-blue-100 to-blue-200 text-blue-800 rounded-xl text-sm font-medium shadow-sm hover:shadow-md transition-shadow duration-200"
                             >
                                 {skill}
                             </motion.span>
@@ -559,7 +559,7 @@ export default function ProfilePage() {
                         <ProfileSectionCard title="About Me" icon={<FeatherIcon size={24} />} delay={0.2}>
                             {isEditing ? (
                                 <div>
-                                    <label className="text-sm font-semibold text-gray-700 mb-3 block">Tell us about yourself</label>
+                                    <label className="text-sm font-semibold text-gray-700 dark:text-white mb-3 block">Tell us about yourself</label>
                                     <textarea 
                                         value={editableData.bio} 
                                         onChange={(e) => setEditableData({ ...editableData, bio: e.target.value })} 
@@ -570,7 +570,7 @@ export default function ProfilePage() {
                                 </div>
                             ) : (
                                 <div className="prose prose-gray max-w-none">
-                                    <p className="text-gray-700 leading-relaxed text-lg bg-gray-50 p-6 rounded-xl border-l-4 border-blue-500">
+                                    <p className="text-gray-700 dark:text-white leading-relaxed text-lg dark:bg-slate-700 bg-gray-50 p-6 rounded-xl border-l-4 border-blue-500">
                                         {editableData.bio || 'No bio provided yet. Click edit to add your story!'}
                                     </p>
                                 </div>
@@ -599,7 +599,7 @@ export default function ProfilePage() {
                         <ProfileSectionCard title="Languages" icon={<Globe size={24} />} delay={0.1}>
                             {isEditing ? (
                                 <div>
-                                    <label className="text-sm font-semibold text-gray-700 mb-3 block">Languages you speak</label>
+                                    <label className="text-sm font-semibold text-gray-700 dark:text-white mb-3 block">Languages you speak</label>
                                     <TagInput 
                                         value={editableData.languages || []} 
                                         onChange={(tags) => setEditableData({ ...editableData, languages: tags })} 
@@ -616,7 +616,7 @@ export default function ProfilePage() {
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ delay: index * 0.1 }}
-                                                    className="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl text-sm font-medium shadow-sm"
+                                                    className="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r dark:from-slate-800 dark:to-slate-900 from-gray-100 to-gray-200 text-gray-700 dark:text-white rounded-xl text-sm font-medium shadow-sm"
                                                 >
                                                     <Globe size={16} className="text-blue-600" />
                                                     <span>{lang}</span>
@@ -639,11 +639,11 @@ export default function ProfilePage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="lg:hidden fixed bottom-6 left-6 right-6 z-50"
                     >
-                        <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-4">
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 p-4">
                             <div className="flex space-x-3">
                                 <button 
                                     onClick={handleCancel} 
-                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold" 
+                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 dark:text-white rounded-xl hover:bg-gray-50 transition-all duration-200 font-semibold" 
                                     disabled={isSaving}
                                 >
                                     Cancel

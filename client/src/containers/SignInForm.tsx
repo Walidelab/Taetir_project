@@ -52,8 +52,11 @@ export function SignInForm() {
     const res = await loginUser(email, password);
     if (!res) return;
     console.log(res);
-    //login(user, profile);
-
+   
+    if (res.user.role === null) {
+      navigate('/choose-role' , { state: { user : res.user } });
+      return;
+    }
     navigate('/dashboard');
     }catch (error : any) {
       console.error("Login failed:", error);

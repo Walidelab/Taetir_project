@@ -12,13 +12,14 @@ const ChooseRole = () => {
     const [role, setRole] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
+    const { user } = location.state || {};
 
     const submitRole = () => {
        
         if (role) {
-            
-                navigate('/complete-setup' , { state : {role : role} })
-                
+
+                navigate('/complete-setup' , { state : {role : role , user : user} })
+
         } else {
             console.error('Please select a role before proceeding.');
         }

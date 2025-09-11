@@ -8,15 +8,12 @@ import cors from 'cors';
 
 const app = express();
 
-// --- Routes ---
 
-// 1. The route that initiates the Google OAuth flow
 app.get(
   '/auth/google',
-  passport.authenticate('google') // This redirects to Google's consent screen
+  passport.authenticate('google') 
 );
 
-// 2. The callback route that Google redirects to after user consent
 app.get(
   '/auth/google/callback',
   passport.authenticate('google', {

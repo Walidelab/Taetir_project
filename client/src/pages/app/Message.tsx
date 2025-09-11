@@ -46,7 +46,8 @@ export default function MessagesPage() {
     // --- Socket.io and Data Fetching Effects ---
     useEffect(() => {
         if (user) {
-            socket.current = io("http://localhost:5000"); // Your backend URL
+            socket.current = io("http://localhost:5000");
+             
             socket.current.emit('add-user', user.id);
 
             socket.current.on('online-users', (users: number[]) => setOnlineUsers(users));
