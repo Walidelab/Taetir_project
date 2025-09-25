@@ -1,10 +1,7 @@
-# This file should be in the root directory of your project,
-# alongside the 'client' and 'server' folders.
 
 version: '3.8'
 
 services:
-  # Your existing database service
   db:
     container_name: my_postgres
     image: postgres:16
@@ -18,7 +15,6 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  # Your existing cache service
   db_cache:
     container_name: my_redis
     image: redis:latest
@@ -28,9 +24,7 @@ services:
     volumes:
       - redis_data:/data
 
-  # NEW: Backend Server Service
   server:
-    # Tells Docker Compose to build the image from the 'server' directory
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -38,38 +32,28 @@ services:
     restart: always
     ports:
       - "5000:5000"
-    # Mount the local code into the container for live reloading during development
     volumes:
       - ./server:/usr/src/app
-      - /usr/src/app/node_modules # Prevents local node_modules from overwriting container's
-    # Environment variables needed by your Node.js app
-    # It uses the service names ('db', 'db_cache') as hostnames.
+      - /usr/src/app/node_modules 
     environment:
       - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb
       - REDIS_URL=redis://db_cache:6379
       - PORT=5000
-      # Add all other variables from your .env file here
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-    # This ensures the server waits for the database to be ready before starting
     depends_on:
       - db
       - db_cache
-    # Use nodemon for automatic restarts during development
     command: npm run dev
 
-  # NEW: Frontend Client Service
   client:
-    # Tells Docker Compose to build the image from the 'client' directory
     build:
       context: ./client
       dockerfile: Dockerfile
     container_name: my_frontend
     restart: always
     ports:
-      # Maps your local port 5173 to the container's port 80
       - "5173:80"
-    # This ensures the client waits for the backend to be ready
     depends_on:
       - server
 
